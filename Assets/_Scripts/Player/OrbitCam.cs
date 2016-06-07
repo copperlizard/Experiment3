@@ -1,0 +1,184 @@
+﻿using UnityEngine;
+using System.Collections;
+
+[RequireComponent(typeof(Camera))]
+public class OrbitCam : MonoBehaviour
+{
+    public GameObject m_target; //cam follow target
+    public RaycastHit m_hit; //player target
+    public float m_minDist = 0.0f, m_maxDist = 100.0f, m_startDist = 5.0f, m_minTilt, m_maxTilt, m_hidePlayerDist, m_rotSpeed, m_damp, m_fudge;
+    public bool m_HideCursor = true;
+    
+    [HideInInspector]
+    public Camera m_thisCam;
+    [HideInInspector]
+    public LayerMask m_thisLayerMask;
+
+    [HideInInspector]
+    public float m_dist, m_h, m_v, m_d;
+
+    private RaycastHit m_interAt;
+    private Quaternion m_rot;
+    private Vector3 m_curVel = Vector3.zero;
+    private bool m_playerHidden = false;
+
+	// Use this for initialization
+	public virtual void Start ()
+    {
+        m_thisCam = GetComponent<Camera>();
+        m_thisLayerMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
+
+
+        m_dist = m_startDist;
+        transform.position = m_target.transform.position + new Vector3(0.0f, 0.0f, -m_dist);
+
+        if(m_HideCursor)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.visible = true;
+        }
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player == null)
+        {
+            Debug.Log("no player found! (ensure player tagged player)");
+        }      
+	}
+
+    // Update is called once per frame
+    public virtual void Update ()
+    {
+        GetInput();  
+	}
+
+    // LateUpdate is called once per frame after Update
+    void LateUpdate ()
+    {   
+        float tilt;
+        if (m_v * m_rotSpeed < 180.0f)
+        {
+            tilt = m_v * m_rotSpeed;
+        }
+        else
+        {
+            tilt = (m_v * m_rotSpeed) - 360.0f;
+        }
+        
+        if (tilt >= m_maxTilt)
+        {
+            tilt = m_maxTilt;
+            m_v = m_maxTilt / m_rotSpeed;
+        }
+        else if (tilt < m_minTilt)
+        {
+            tilt = m_minTilt;
+            m_v = (m_minTilt + 360.0f) / m_rotSpeed;
+        }
+
+        if (tilt < 0.0f)
+        {
+            tilt += 360.0f;
+        }
+
+        m_rot = Quaternion.Euler(tilt, m_h * m_rotSpeed, 0.0f);
+        
+        // Find new cam position
+        m_dist -= m_d;        
+        m_dist = Mathf.Clamp(m_dist, m_minDist, m_maxDist);
+        Vector3 tarPos = (m_rot * new Vector3(0.0f, 0.0f, -m_dist)) + m_target.transform.position;
+
+        //Check for sight line intersection
+        tarPos = IntersectCheck(tarPos);
+
+        //Hide player and weapons if camera too close
+        float distFromPlayer = (m_target.transform.position - tarPos).magnitude;
+        
+        if (distFromPlayer <= m_hidePlayerDist && !m_playerHidden)
+        {
+            //Debug.Log("Hiding player!");
+
+            m_playerHidden = true;
+            m_thisCam.cullingMask = m_thisLayerMask;
+        }
+        else if (distFromPlayer > m_hidePlayerDist && m_playerHidden)
+        {
+            //Debug.Log("Un Hiding player!");
+            
+            m_playerHidden = false;
+            m_thisCam.cullingMask = ~0;
+        }
+
+        //Move camera
+        transform.position = Vector3.SmoothDamp(transform.position, tarPos, ref m_curVel, m_damp);
+        transform.rotation = m_rot;
+
+        //Find "hit"
+        if(!Physics.Raycast(transform.position, transform.forward, out m_hit, m_maxDist, m_thisLayerMask))
+        {
+            m_hit.point = transform.position + transform.forward * m_maxDist;
+            m_hit.normal = Vector3.up;
+        }        
+    }
+
+    public void GetInput ()
+    {
+        bool aiming = Input.GetMouseButton(1);
+        m_h += Input.GetAxis("Mouse X") * ((aiming) ? 0.5f : 1.0f);
+        m_v -= Input.GetAxis("Mouse Y") * ((aiming) ? 0.5f : 1.0f);
+        //m_d = Input.GetAxis("Mouse ScrollWheel");
+    }
+
+    Vector3 IntersectCheck (Vector3 target)
+    {
+        //If intersection (cast ray from camera to player)
+        if (Physics.Raycast(m_target.transform.position, target - m_target.transform.position, out m_interAt, m_dist, m_thisLayerMask))
+        {   
+#if UNITY_EDITOR
+            Debug.DrawLine(m_target.transform.position, m_interAt.point, Color.yellow, 0.01f, true);
+#endif      
+
+            target = m_interAt.point + (m_interAt.normal * m_fudge);
+        }
+
+        return target;
+    }
+
+    public void SetCamDist (float dist)
+    {
+        m_dist = Mathf.Clamp(dist, m_minDist, m_maxDist);
+    }
+
+    public float GetCamDist ()
+    {
+        return m_dist;
+    }
+
+#if UNITY_EDITOR
+    void OnDrawGizmos ()
+    {
+        if (Application.isPlaying)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(m_hit.point, 0.05f);            
+        }
+    }
+#endif
+
+    float ClampAngle (float ang, float min, float max)
+    {
+        if (ang < -360.0f)
+        {
+            ang += 360.0f;
+        }
+        else if (ang > 360.0f)
+        {
+            ang -= 360.0f;
+        }
+        return Mathf.Clamp(ang, min, max);
+    }    
+}
