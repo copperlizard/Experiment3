@@ -12,7 +12,7 @@ public class PlayerMovementController : MonoBehaviour
 
     private Vector3 m_groundNormal;
 
-    private float m_sprintInputModifier;
+    private float m_sprintInputModifier = 2.0f;
 
 	// Use this for initialization
 	void Start ()
@@ -106,7 +106,7 @@ public class PlayerMovementController : MonoBehaviour
     {
         // Apply move speed modifier
         if (m_playerState.m_sprinting)
-        {
+        {            
             move *= m_sprintInputModifier;
         }        
 
