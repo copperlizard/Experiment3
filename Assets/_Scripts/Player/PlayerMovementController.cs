@@ -44,13 +44,21 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
+        Vector3 move = new Vector3(h, 0.0f, v).normalized;
+        
+        // Apply move speed modifier
+        if (m_playerState.m_sprinting)
+        {
+            move *= m_sprintInputModifier;
+        }
+
         if (!m_playerState.m_aiming)
         {
-            NormalMove(new Vector3(h, 0.0f, v).normalized);
+            NormalMove(move);
         }
         else
         {
-            AimMove(new Vector3(h, 0.0f, v).normalized);
+            AimMove(move);
         }
     }
 
@@ -104,12 +112,6 @@ public class PlayerMovementController : MonoBehaviour
 
     private void NormalMove (Vector3 move)
     {
-        // Apply move speed modifier
-        if (m_playerState.m_sprinting)
-        {            
-            move *= m_sprintInputModifier;
-        }        
-
         if (move.magnitude > 0.0f)
         {
             // Rotate input to match camera
