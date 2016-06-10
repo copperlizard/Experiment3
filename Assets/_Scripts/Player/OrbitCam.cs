@@ -6,8 +6,9 @@ public class OrbitCam : MonoBehaviour
 {
     public GameObject m_target; //cam follow target
     public RaycastHit m_hit; //player target
-    public float m_minDist = 0.0f, m_maxDist = 100.0f, m_startDist = 5.0f, m_minTilt, m_maxTilt, m_hidePlayerDist, m_rotSpeed, m_damp, m_fudge;
-    public bool m_HideCursor = true;
+    public Vector3 m_zoomTarShift = new Vector3(0.2f, 0.0f, 0.0f);
+    public float m_minDist = 0.0f, m_maxDist = 100.0f, m_startDist = 5.0f, m_zoomDist = 2.0f, m_minTilt, m_maxTilt, m_hidePlayerDist, m_rotSpeed, m_damp, m_fudge;
+    public bool m_HideCursor = true, m_rightClickZoom = true;
     
     [HideInInspector]
     public Camera m_thisCam;
@@ -20,7 +21,7 @@ public class OrbitCam : MonoBehaviour
     private RaycastHit m_interAt;
     private Quaternion m_rot;
     private Vector3 m_curVel = Vector3.zero;
-    private bool m_playerHidden = false;
+    private bool m_playerHidden = false, m_zoom = false;
 
 	// Use this for initialization
 	public virtual void Start ()
@@ -90,7 +91,23 @@ public class OrbitCam : MonoBehaviour
         // Find new cam position
         m_dist -= m_d;        
         m_dist = Mathf.Clamp(m_dist, m_minDist, m_maxDist);
-        Vector3 tarPos = (m_rot * new Vector3(0.0f, 0.0f, -m_dist)) + m_target.transform.position;
+
+        Vector3 tarPos;
+        if (m_rightClickZoom)
+        {
+            if (!m_zoom)
+            {
+                tarPos = (m_rot * new Vector3(0.0f, 0.0f, -m_dist)) + m_target.transform.position;
+            }
+            else
+            {
+                tarPos = (m_rot * new Vector3(0.0f, 0.0f, -m_zoomDist)) + m_target.transform.position + m_target.transform.TransformVector(m_zoomTarShift);
+            }
+        }
+        else
+        {
+            tarPos = (m_rot * new Vector3(0.0f, 0.0f, -m_dist)) + m_target.transform.position;
+        }        
 
         //Check for sight line intersection
         tarPos = IntersectCheck(tarPos);
@@ -131,6 +148,8 @@ public class OrbitCam : MonoBehaviour
         m_h += Input.GetAxis("Mouse X") * ((aiming) ? 0.5f : 1.0f);
         m_v -= Input.GetAxis("Mouse Y") * ((aiming) ? 0.5f : 1.0f);
         //m_d = Input.GetAxis("Mouse ScrollWheel");
+
+        m_zoom = Input.GetButton("Fire2");
     }
 
     Vector3 IntersectCheck (Vector3 target)

@@ -11,6 +11,7 @@ public class PlayerAnimationController : MonoBehaviour
     private PlayerStateInfo m_playerState;
 
     private Animator m_playerAnimator;
+    private Transform m_spineTransform;
 
     private Rigidbody m_playerRigidBody;
 
@@ -22,6 +23,7 @@ public class PlayerAnimationController : MonoBehaviour
         m_playerState = GetComponent<PlayerStateInfo>();
 
         m_playerAnimator = GetComponent<Animator>();
+        m_spineTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.Spine);
 
         m_playerRigidBody = GetComponent<Rigidbody>();
     }
@@ -54,7 +56,7 @@ public class PlayerAnimationController : MonoBehaviour
         PlayerJump();
 
         // update the animator parameters
-        //m_playerAnimator.SetLayerWeight(1, (m_playerState.m_aiming) ? Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 1.0f, 0.1f) : Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //set aiming layer weight
+        m_playerAnimator.SetLayerWeight(1, (m_playerState.m_aiming) ? Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 1.0f, 0.1f) : Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //set aiming layer weight
         m_playerAnimator.SetFloat("Forward", m_playerState.m_forwardAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Sideways", m_playerState.m_sidewaysAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Turn", m_turn, 0.1f, Time.deltaTime);
@@ -121,7 +123,14 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
-    void RotatePlayer(float ang)
+    private void OnAnimatorIK ()
+    {
+        //Aim Torso!!!
+
+        //m_playerAnimator.SetBoneLocalRotation()        
+    }
+
+    void RotatePlayer (float ang)
     {
         float turnSpeed = Mathf.Lerp(m_stationaryTurnSpeed, m_movingTurnSpeed, m_playerState.m_forwardAmount);
 
