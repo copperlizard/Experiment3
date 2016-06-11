@@ -5,6 +5,8 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerAnimationController : MonoBehaviour
 {
+    public GameObject m_bow;
+
     public Camera m_cam;
 
     public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
@@ -14,7 +16,7 @@ public class PlayerAnimationController : MonoBehaviour
     private PlayerStateInfo m_playerState;
 
     private Animator m_playerAnimator;
-    private Transform m_spineTransform;
+    private Transform m_spineTransform, m_leftShoulderTransform, m_rightShoulderTransform;
 
     private Rigidbody m_playerRigidBody;
 
@@ -33,6 +35,8 @@ public class PlayerAnimationController : MonoBehaviour
 
         m_playerAnimator = GetComponent<Animator>();
         m_spineTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.Spine);
+        m_leftShoulderTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.LeftShoulder);
+        m_rightShoulderTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.RightShoulder);
 
         m_playerRigidBody = GetComponent<Rigidbody>();
     }
@@ -41,6 +45,21 @@ public class PlayerAnimationController : MonoBehaviour
 	void Update ()
     {
         UpdateAnimator();
+
+        if (m_playerState.m_armed)
+        {
+            if (!m_bow.activeInHierarchy)
+            {
+                m_bow.SetActive(true);
+            }
+        }
+        else if (!m_playerState.m_armed)
+        {
+            if (m_bow.activeInHierarchy)
+            {
+                m_bow.SetActive(false);
+            }
+        }
 	}
 
     private void UpdateAnimator ()
@@ -114,7 +133,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             Vector3 v = (m_playerAnimator.deltaPosition * m_MoveSpeedMultiplier) / Time.deltaTime;
 
-            Debug.Log("v == " + v.ToString());
+            //Debug.Log("v == " + v.ToString());
 
             // Apply move speed modifier
             if (m_playerState.m_crouching)
@@ -138,58 +157,39 @@ public class PlayerAnimationController : MonoBehaviour
 
         //TRY USING SHOULDERS TO DRAW LINE THAT SHOULD BE PARALLEL WITH LINE TO TARGET!??!?!
 
-        if (m_playerState.m_aiming)
+        if (m_playerState.m_aiming && m_playerState.m_armed)
         {
             Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
             Vector3 toTar = tar - m_spineTransform.position;
-            Vector3 tiltLine = Vector3.ProjectOnPlane(toTar, m_spineTransform.right);
-            Vector3 panLine = Vector3.ProjectOnPlane(toTar, m_spineTransform.up);
+            toTar = m_spineTransform.InverseTransformDirection(toTar);
 
-            //Vector3 tiltLine = Vector3.ProjectOnPlane(toTar, transform.right);
-            //Vector3 panLine = Vector3.ProjectOnPlane(toTar, transform.up);
+            Vector3 shoulders = m_leftShoulderTransform.position - m_rightShoulderTransform.position;
+            shoulders = m_spineTransform.InverseTransformDirection(shoulders);
+            
+            Quaternion deltaRot = Quaternion.FromToRotation(shoulders, toTar);
 
-            float pan = Mathf.Clamp(Vector3.Angle(m_spineTransform.forward, panLine), 0.0f, 45.0f);
-            float tilt = Mathf.Clamp(Vector3.Angle(m_spineTransform.forward, tiltLine), 0.0f, 45.0f);
+            m_spineTransform.localRotation *= deltaRot;
 
-            //float pan = Mathf.Clamp(Vector3.Angle(transform.forward, panLine), 0.0f, 45.0f);
-            //float tilt = Mathf.Clamp(Vector3.Angle(transform.forward, tiltLine), 0.0f, 45.0f);
+            m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
 
-            Debug.Log("pan == " + pan.ToString() + " ; tilt == " + tilt.ToString());
+#if UNITY_EDITOR
+            //Draw lines
 
-            bool panRight = Vector3.Dot(panLine, m_spineTransform.right) > 0.0f;
-            bool tiltUp = Vector3.Dot(tiltLine, m_spineTransform.up) > 0.0f;
-
-            //bool panRight = Vector3.Dot(panLine, transform.right) > 0.0f;
-            //bool tiltUp = Vector3.Dot(tiltLine, transform.up) > 0.0f;
-
-            Debug.Log("panRight == " + panRight.ToString() + " ; tiltUp == " + tiltUp.ToString());
-
-            //m_spineTransform.Rotate(-tilt * ((tiltUp) ? 1.0f : -1.0f), pan * ((panRight) ? 1.0f : -1.0f), 0.0f);
-            //m_spineTransform.Rotate(0.0f, 0.0f, -tilt * ((tiltUp) ? 1.0f : -1.0f));
-            //m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
+            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + toTar);
+            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + shoulders, Color.yellow, 0.01f, true);   
+#endif
+        }
+        else if (m_playerState.m_aiming)
+        {
+            Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
 
             m_playerAnimator.SetLookAtPosition(tar);
             m_playerAnimator.SetLookAtWeight(1.0f);
-
-#if UNITY_EDITOR
-            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + tiltLine, Color.yellow);
-            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + panLine, Color.green);
-#endif
         }
         else
         {
             m_playerAnimator.SetLookAtWeight(0.0f);
-        }
-
-
-#if UNITY_EDITOR
-        Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + m_spineTransform.forward);
-        Debug.DrawLine(m_spineTransform.position, (m_cam.transform.position + m_cam.transform.forward * 10.0f), Color.red);
-
-        
-#endif
-
-        //m_playerAnimator.SetBoneLocalRotation()        
+        }    
     }
 
     void RotatePlayer (float ang)
