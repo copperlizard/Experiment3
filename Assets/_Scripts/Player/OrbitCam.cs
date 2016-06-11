@@ -155,7 +155,7 @@ public class OrbitCam : MonoBehaviour
     Vector3 IntersectCheck (Vector3 target)
     {
         //If intersection (cast ray from camera to player)
-        if (Physics.Raycast(m_target.transform.position, target - m_target.transform.position, out m_interAt, m_dist, m_thisLayerMask))
+        if (Physics.Raycast(m_target.transform.position, target - m_target.transform.position, out m_interAt, (!m_zoom) ? m_dist : m_zoomDist, m_thisLayerMask))
         {   
 #if UNITY_EDITOR
             Debug.DrawLine(m_target.transform.position, m_interAt.point, Color.yellow, 0.01f, true);

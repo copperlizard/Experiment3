@@ -5,9 +5,12 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerAnimationController : MonoBehaviour
 {
+    public Camera m_cam;
+
     public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
         m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
 
+    //private OrbitCam m_orbitCam;
     private PlayerStateInfo m_playerState;
 
     private Animator m_playerAnimator;
@@ -20,6 +23,12 @@ public class PlayerAnimationController : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
+        if (m_cam == null)
+        {
+            m_cam = Camera.main;
+        }
+        //m_orbitCam = m_cam.GetComponent<OrbitCam>();
+
         m_playerState = GetComponent<PlayerStateInfo>();
 
         m_playerAnimator = GetComponent<Animator>();
@@ -123,9 +132,62 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
-    private void OnAnimatorIK ()
+    private void OnAnimatorIK (int layer)
     {
-        //Aim Torso!!!
+        //Aim Torso!!! FORWARD POINTS RIGHT, UP POINTS UP
+
+        //TRY USING SHOULDERS TO DRAW LINE THAT SHOULD BE PARALLEL WITH LINE TO TARGET!??!?!
+
+        if (m_playerState.m_aiming)
+        {
+            Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
+            Vector3 toTar = tar - m_spineTransform.position;
+            Vector3 tiltLine = Vector3.ProjectOnPlane(toTar, m_spineTransform.right);
+            Vector3 panLine = Vector3.ProjectOnPlane(toTar, m_spineTransform.up);
+
+            //Vector3 tiltLine = Vector3.ProjectOnPlane(toTar, transform.right);
+            //Vector3 panLine = Vector3.ProjectOnPlane(toTar, transform.up);
+
+            float pan = Mathf.Clamp(Vector3.Angle(m_spineTransform.forward, panLine), 0.0f, 45.0f);
+            float tilt = Mathf.Clamp(Vector3.Angle(m_spineTransform.forward, tiltLine), 0.0f, 45.0f);
+
+            //float pan = Mathf.Clamp(Vector3.Angle(transform.forward, panLine), 0.0f, 45.0f);
+            //float tilt = Mathf.Clamp(Vector3.Angle(transform.forward, tiltLine), 0.0f, 45.0f);
+
+            Debug.Log("pan == " + pan.ToString() + " ; tilt == " + tilt.ToString());
+
+            bool panRight = Vector3.Dot(panLine, m_spineTransform.right) > 0.0f;
+            bool tiltUp = Vector3.Dot(tiltLine, m_spineTransform.up) > 0.0f;
+
+            //bool panRight = Vector3.Dot(panLine, transform.right) > 0.0f;
+            //bool tiltUp = Vector3.Dot(tiltLine, transform.up) > 0.0f;
+
+            Debug.Log("panRight == " + panRight.ToString() + " ; tiltUp == " + tiltUp.ToString());
+
+            //m_spineTransform.Rotate(-tilt * ((tiltUp) ? 1.0f : -1.0f), pan * ((panRight) ? 1.0f : -1.0f), 0.0f);
+            //m_spineTransform.Rotate(0.0f, 0.0f, -tilt * ((tiltUp) ? 1.0f : -1.0f));
+            //m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
+
+            m_playerAnimator.SetLookAtPosition(tar);
+            m_playerAnimator.SetLookAtWeight(1.0f);
+
+#if UNITY_EDITOR
+            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + tiltLine, Color.yellow);
+            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + panLine, Color.green);
+#endif
+        }
+        else
+        {
+            m_playerAnimator.SetLookAtWeight(0.0f);
+        }
+
+
+#if UNITY_EDITOR
+        Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + m_spineTransform.forward);
+        Debug.DrawLine(m_spineTransform.position, (m_cam.transform.position + m_cam.transform.forward * 10.0f), Color.red);
+
+        
+#endif
 
         //m_playerAnimator.SetBoneLocalRotation()        
     }
