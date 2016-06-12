@@ -5,7 +5,7 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerAnimationController : MonoBehaviour
 {
-    public GameObject m_bow;
+    public GameObject m_bow, m_magic;
 
     public Camera m_cam;
 
@@ -21,6 +21,8 @@ public class PlayerAnimationController : MonoBehaviour
     private Rigidbody m_playerRigidBody;
 
     private float m_turn;
+
+    private bool m_fireLock = false;
 
     // Use this for initialization
     void Start ()
@@ -52,6 +54,11 @@ public class PlayerAnimationController : MonoBehaviour
             {
                 m_bow.SetActive(true);
             }
+
+            if (m_magic.activeInHierarchy)
+            {
+                m_magic.SetActive(false);
+            }
         }
         else if (!m_playerState.m_armed)
         {
@@ -59,7 +66,22 @@ public class PlayerAnimationController : MonoBehaviour
             {
                 m_bow.SetActive(false);
             }
-        }
+
+            if (m_playerState.m_aiming)
+            {
+                if (!m_magic.activeInHierarchy)
+                {
+                    m_magic.SetActive(true);
+                }
+            }
+            else
+            {
+                if (m_magic.activeInHierarchy)
+                {
+                    m_magic.SetActive(false);
+                }
+            }
+        }        
 	}
 
     private void UpdateAnimator ()
@@ -125,6 +147,43 @@ public class PlayerAnimationController : MonoBehaviour
             // don't use that while airborne or turning in place
             m_playerAnimator.speed = 1;
         }
+
+        //Manual state changes...
+
+        AnimatorStateInfo torsoStateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+        
+        if (m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("ArmedDraw") && torsoStateInfo.normalizedTime >= 1)
+        {
+            Debug.Log("charging/firing arrow!");
+
+            m_fireLock = true;
+            StartCoroutine(ChargeArrow());
+        }
+    }
+
+    IEnumerator ChargeArrow ()
+    {
+        
+        m_playerAnimator.Play("ArmedCharging", 1);
+
+        AnimatorStateInfo stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+        while (stateInfo.IsName("ArmedCharging"))
+        {   
+            stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+            m_playerState.m_arrowCharge = (stateInfo.normalizedTime > 1.0f) ? 1.0f : stateInfo.normalizedTime;
+
+            yield return null;
+        }        
+
+        while (m_playerState.m_firing)
+        {
+            yield return null;
+        }
+
+        m_playerAnimator.Play("ArmedFire", 1);
+        
+        m_fireLock = false;
     }
 
     private void OnAnimatorMove ()
