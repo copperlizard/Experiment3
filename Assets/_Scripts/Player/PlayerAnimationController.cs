@@ -5,10 +5,12 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerAnimationController : MonoBehaviour
 {
-    public GameObject m_bow, m_magic;
-
     public Camera m_cam;
 
+    public GameObject m_bow, m_magic;
+
+    public Transform m_leftHandDrawnArrowTransform;    
+    
     public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
         m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
 
@@ -219,24 +221,28 @@ public class PlayerAnimationController : MonoBehaviour
         if (m_playerState.m_aiming && m_playerState.m_armed)
         {
             Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
-            Vector3 toTar = tar - m_spineTransform.position;
+            Vector3 toTar = tar - m_rightShoulderTransform.position;
+
+            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + toTar);
+
             toTar = m_spineTransform.InverseTransformDirection(toTar);
 
-            Vector3 shoulders = m_leftShoulderTransform.position - m_rightShoulderTransform.position;
-            shoulders = m_spineTransform.InverseTransformDirection(shoulders);
-            
-            Quaternion deltaRot = Quaternion.FromToRotation(shoulders, toTar);
+            //Vector3 shoulders = m_leftShoulderTransform.position - m_rightShoulderTransform.position;
+
+            //Vector3 shoulders = m_leftHandDrawnArrowTransform.position - m_rightShoulderTransform.position;
+
+
+            //Debug.DrawLine(m_leftShoulderTransform.position, m_leftShoulderTransform.position - shoulders, Color.yellow);
+
+            //shoulders = m_spineTransform.InverseTransformDirection(shoulders);
+
+            //Quaternion deltaRot = Quaternion.FromToRotation(shoulders, toTar);
+
+            Quaternion deltaRot = Quaternion.FromToRotation(m_spineTransform.InverseTransformDirection(m_leftHandDrawnArrowTransform.forward), toTar);
 
             m_spineTransform.localRotation *= deltaRot;
 
             m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
-
-#if UNITY_EDITOR
-            //Draw lines
-
-            Debug.DrawLine(m_spineTransform.position, m_spineTransform.position + toTar);
-            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + shoulders, Color.yellow, 0.01f, true);   
-#endif
         }
         else if (m_playerState.m_aiming)
         {
