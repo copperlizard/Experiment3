@@ -7,14 +7,16 @@ public class PlayerAnimationController : MonoBehaviour
 {
     public Camera m_cam;
 
-    public GameObject m_bow, m_magic;
+    public ObjectPool m_firedArrows;
+
+    public GameObject m_bow, m_magic, m_drawnArrow, m_drawingArrow;
 
     public Transform m_leftHandDrawnArrowTransform;    
     
     public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
         m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
 
-    //private OrbitCam m_orbitCam;
+    private OrbitCam m_orbitCam;
     private PlayerStateInfo m_playerState;
 
     private Animator m_playerAnimator;
@@ -33,7 +35,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             m_cam = Camera.main;
         }
-        //m_orbitCam = m_cam.GetComponent<OrbitCam>();
+        m_orbitCam = m_cam.GetComponent<OrbitCam>();
 
         m_playerState = GetComponent<PlayerStateInfo>();
 
@@ -42,7 +44,19 @@ public class PlayerAnimationController : MonoBehaviour
         m_leftShoulderTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.LeftShoulder);
         m_rightShoulderTransform = m_playerAnimator.GetBoneTransform(HumanBodyBones.RightShoulder);
 
+        if (m_leftShoulderTransform == null)
+        {
+            Debug.Log("no left shoulder");
+        }
+        if (m_rightShoulderTransform == null)
+        {
+            Debug.Log("no right shoulder");
+        }
+
         m_playerRigidBody = GetComponent<Rigidbody>();
+
+        m_drawnArrow.SetActive(false);
+        m_drawingArrow.SetActive(false);
     }
 	
 	// Update is called once per frame
@@ -61,12 +75,22 @@ public class PlayerAnimationController : MonoBehaviour
             {
                 m_magic.SetActive(false);
             }
+
+            if (!m_playerState.m_aiming && m_drawnArrow.activeInHierarchy)
+            {
+                ArrowCanceled();
+            }
         }
         else if (!m_playerState.m_armed)
         {
             if (m_bow.activeInHierarchy)
             {
                 m_bow.SetActive(false);
+            }
+
+            if (m_drawnArrow.activeInHierarchy)
+            {
+                ArrowCanceled();
             }
 
             if (m_playerState.m_aiming)
@@ -156,7 +180,7 @@ public class PlayerAnimationController : MonoBehaviour
         
         if (m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("ArmedDraw") && torsoStateInfo.normalizedTime >= 1)
         {
-            Debug.Log("charging/firing arrow!");
+            //Debug.Log("charging/firing arrow!");
 
             m_fireLock = true;
             StartCoroutine(ChargeArrow());
@@ -213,32 +237,28 @@ public class PlayerAnimationController : MonoBehaviour
     }
 
     private void OnAnimatorIK (int layer)
-    {
-        //Aim Torso!!! FORWARD POINTS RIGHT, UP POINTS UP
-
-        //TRY USING SHOULDERS TO DRAW LINE THAT SHOULD BE PARALLEL WITH LINE TO TARGET!??!?!
-
+    {        
         if (m_playerState.m_aiming && m_playerState.m_armed)
         {
-            Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
+            //Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
+            Vector3 tar = m_orbitCam.m_hit.point;
             Vector3 toTar = tar - m_rightShoulderTransform.position;
 
-            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + toTar);
+            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + toTar, Color.red);
+            Debug.DrawLine(m_cam.transform.position, m_cam.transform.position + m_cam.transform.forward * 10.0f, Color.yellow);
 
             toTar = m_spineTransform.InverseTransformDirection(toTar);
-
-            //Vector3 shoulders = m_leftShoulderTransform.position - m_rightShoulderTransform.position;
-
-            //Vector3 shoulders = m_leftHandDrawnArrowTransform.position - m_rightShoulderTransform.position;
-
-
-            //Debug.DrawLine(m_leftShoulderTransform.position, m_leftShoulderTransform.position - shoulders, Color.yellow);
-
-            //shoulders = m_spineTransform.InverseTransformDirection(shoulders);
-
-            //Quaternion deltaRot = Quaternion.FromToRotation(shoulders, toTar);
-
+            
             Quaternion deltaRot = Quaternion.FromToRotation(m_spineTransform.InverseTransformDirection(m_leftHandDrawnArrowTransform.forward), toTar);
+
+            AnimatorStateInfo stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+            if ((stateInfo.IsName("ArmedDraw") && stateInfo.normalizedTime < 1.0f) || stateInfo.IsName("ArmedFire"))
+            {
+                Vector3 shoulders = m_leftShoulderTransform.position - m_rightShoulderTransform.position;
+                shoulders = m_spineTransform.InverseTransformDirection(shoulders);
+                deltaRot = Quaternion.FromToRotation(shoulders, toTar) * Quaternion.Euler(0.0f, 3.0f, 11.0f);
+            }
 
             m_spineTransform.localRotation *= deltaRot;
 
@@ -246,9 +266,7 @@ public class PlayerAnimationController : MonoBehaviour
         }
         else if (m_playerState.m_aiming)
         {
-            Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
-
-            m_playerAnimator.SetLookAtPosition(tar);
+            m_playerAnimator.SetLookAtPosition(m_orbitCam.m_hit.point);
             m_playerAnimator.SetLookAtWeight(1.0f);
         }
         else
@@ -278,5 +296,39 @@ public class PlayerAnimationController : MonoBehaviour
             m_playerState.m_jumping = false;
             m_playerRigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.VelocityChange);
         }
+    }
+
+    void DrawingArrow ()
+    {
+        m_drawingArrow.SetActive(true);
+    }
+
+    void ArrowDrawn ()
+    {
+        m_drawingArrow.SetActive(false);
+        m_drawnArrow.SetActive(true);
+    }
+
+    void ArrowFired ()
+    {
+        m_drawnArrow.SetActive(false);
+
+        GameObject arrow = m_firedArrows.GetObject();
+        Rigidbody arrowRB = arrow.GetComponent<Rigidbody>();
+
+        arrow.transform.position = m_drawnArrow.transform.position;
+        arrow.transform.rotation = m_drawnArrow.transform.rotation;
+
+        arrow.SetActive(true);
+
+        arrowRB.WakeUp();
+        arrowRB.velocity = arrow.transform.up * (30.0f + 30.0f * m_playerState.m_arrowCharge);
+
+        m_playerState.m_arrowCharge = 0.0f;
+    }
+
+    void ArrowCanceled ()
+    {
+        m_drawnArrow.SetActive(false);
     }
 }

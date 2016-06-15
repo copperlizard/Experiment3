@@ -8,7 +8,7 @@ public class DrawnArrow : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-	
+
 	}
 	
 	// Update is called once per frame
@@ -25,5 +25,5 @@ public class DrawnArrow : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position + transform.forward);
 
         Debug.DrawLine(m_rightHandArrowTran.position, m_rightHandArrowTran.position + m_rightHandArrowTran.forward, Color.blue);
-	}
+	}    
 }
