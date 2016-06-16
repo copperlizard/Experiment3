@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
@@ -7,7 +8,9 @@ public class PlayerAnimationController : MonoBehaviour
 {
     public Camera m_cam;
 
-    public ObjectPool m_firedArrows;
+    //public ObjectPool m_firedArrows;
+
+    public List<ObjectPool> m_firedArrows = new List<ObjectPool>();
 
     public GameObject m_bow, m_magic, m_drawnArrow, m_drawingArrow;
 
@@ -64,6 +67,13 @@ public class PlayerAnimationController : MonoBehaviour
     {
         UpdateAnimator();
 
+        //Dispose of unused arrows
+        if ((m_drawnArrow.activeInHierarchy || m_drawingArrow.activeInHierarchy) && (!m_playerState.m_aiming || !m_playerState.m_armed))
+        {
+            ArrowCanceled();
+        }
+
+        //Manage "weapon" visibility
         if (m_playerState.m_armed)
         {
             if (!m_bow.activeInHierarchy)
@@ -74,24 +84,14 @@ public class PlayerAnimationController : MonoBehaviour
             if (m_magic.activeInHierarchy)
             {
                 m_magic.SetActive(false);
-            }
-
-            if (!m_playerState.m_aiming && m_drawnArrow.activeInHierarchy)
-            {
-                ArrowCanceled();
-            }
+            }            
         }
         else if (!m_playerState.m_armed)
         {
             if (m_bow.activeInHierarchy)
             {
                 m_bow.SetActive(false);
-            }
-
-            if (m_drawnArrow.activeInHierarchy)
-            {
-                ArrowCanceled();
-            }
+            }            
 
             if (m_playerState.m_aiming)
             {
@@ -188,22 +188,40 @@ public class PlayerAnimationController : MonoBehaviour
     }
 
     IEnumerator ChargeArrow ()
-    {
-        
+    {        
         m_playerAnimator.Play("ArmedCharging", 1);
 
         AnimatorStateInfo stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+        while (!stateInfo.IsName("ArmedCharging"))
+        {
+            stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+            //Debug.Log("waiting for charge animation");
+
+            yield return null;
+        }
+                
         while (stateInfo.IsName("ArmedCharging"))
         {   
             stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
             m_playerState.m_arrowCharge = (stateInfo.normalizedTime > 1.0f) ? 1.0f : stateInfo.normalizedTime;
 
+            //Debug.Log("arrow charge == " + m_playerState.m_arrowCharge.ToString());
+
+            if (!m_playerState.m_firing)
+            {
+                break;
+            }
+
             yield return null;
         }        
 
         while (m_playerState.m_firing)
         {
+            //Debug.Log("full charge");
+
             yield return null;
         }
 
@@ -240,12 +258,17 @@ public class PlayerAnimationController : MonoBehaviour
     {        
         if (m_playerState.m_aiming && m_playerState.m_armed)
         {
-            //Vector3 tar = m_cam.transform.position + m_cam.transform.forward * 10.0f;
             Vector3 tar = m_orbitCam.m_hit.point;
             Vector3 toTar = tar - m_rightShoulderTransform.position;
 
-            Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + toTar, Color.red);
-            Debug.DrawLine(m_cam.transform.position, m_cam.transform.position + m_cam.transform.forward * 10.0f, Color.yellow);
+            if (Vector3.Dot(transform.forward, toTar) < 0.0f)
+            {
+                //Target out of player COV (wait for rotate)
+                return;
+            }
+
+            //Debug.DrawLine(m_rightShoulderTransform.position, m_rightShoulderTransform.position + toTar, Color.red);
+            //Debug.DrawLine(m_cam.transform.position, m_cam.transform.position + m_cam.transform.forward * 10.0f, Color.yellow);
 
             toTar = m_spineTransform.InverseTransformDirection(toTar);
             
@@ -313,22 +336,35 @@ public class PlayerAnimationController : MonoBehaviour
     {
         m_drawnArrow.SetActive(false);
 
-        GameObject arrow = m_firedArrows.GetObject();
+        GameObject arrow = m_firedArrows[m_playerState.m_arrowMode].GetObject();
         Rigidbody arrowRB = arrow.GetComponent<Rigidbody>();
+
+        if (arrow.activeInHierarchy)
+        {
+            arrow.SetActive(false);
+        }
 
         arrow.transform.position = m_drawnArrow.transform.position;
         arrow.transform.rotation = m_drawnArrow.transform.rotation;
 
         arrow.SetActive(true);
-
-        arrowRB.WakeUp();
-        arrowRB.velocity = arrow.transform.up * (30.0f + 30.0f * m_playerState.m_arrowCharge);
+                
+        //arrowRB.velocity = arrow.transform.forward * (30.0f + 30.0f * m_playerState.m_arrowCharge);
+        arrowRB.velocity = (m_orbitCam.m_hit.point - arrow.transform.position).normalized * (30.0f + 30.0f * m_playerState.m_arrowCharge);
 
         m_playerState.m_arrowCharge = 0.0f;
     }
 
     void ArrowCanceled ()
     {
-        m_drawnArrow.SetActive(false);
+        if (m_drawnArrow.activeInHierarchy)
+        {
+            m_drawnArrow.SetActive(false);
+        }
+
+        if (m_drawingArrow.activeInHierarchy)
+        {
+            m_drawingArrow.SetActive(false);
+        }        
     }
 }

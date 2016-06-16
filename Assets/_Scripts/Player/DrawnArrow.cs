@@ -22,8 +22,7 @@ public class DrawnArrow : MonoBehaviour
         m_leftHandArrowTran.rotation = transform.rotation;
         m_rightHandArrowTran.rotation = transform.rotation;
 
-        Debug.DrawLine(transform.position, transform.position + transform.forward);
-
-        Debug.DrawLine(m_rightHandArrowTran.position, m_rightHandArrowTran.position + m_rightHandArrowTran.forward, Color.blue);
+        //Debug.DrawLine(transform.position, transform.position + transform.forward);
+        //Debug.DrawLine(m_rightHandArrowTran.position, m_rightHandArrowTran.position + m_rightHandArrowTran.forward, Color.blue);
 	}    
 }

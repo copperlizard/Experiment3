@@ -42,6 +42,37 @@ public class PlayerControlInput : MonoBehaviour
             m_weaponModeLock = false;
         }
 
+        if (m_playerState.m_armed)
+        {
+            if (Input.GetButton("WeaponSelect1"))
+            {
+                m_playerState.m_arrowMode = 0;
+            }
+            else if (Input.GetButton("WeaponSelect2"))
+            {
+                m_playerState.m_arrowMode = 1;
+            }
+            else if (Input.GetButton("WeaponSelect3"))
+            {
+                m_playerState.m_arrowMode = 2;
+            }
+        }
+        else
+        {
+            if (Input.GetButton("WeaponSelect1"))
+            {
+                m_playerState.m_magicMode = 0;
+            }
+            else if (Input.GetButton("WeaponSelect2"))
+            {
+                m_playerState.m_magicMode = 1;
+            }
+            else if (Input.GetButton("WeaponSelect3"))
+            {
+                m_playerState.m_magicMode = 2;
+            }
+        }
+
         m_playerMover.Move(m_v, m_h);
 	}
 }
