@@ -178,12 +178,20 @@ public class PlayerAnimationController : MonoBehaviour
 
         AnimatorStateInfo torsoStateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
         
-        if (m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("ArmedDraw") && torsoStateInfo.normalizedTime >= 1)
+        if (m_playerState.m_armed && m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("ArmedDraw") && torsoStateInfo.normalizedTime >= 1)
         {
             //Debug.Log("charging/firing arrow!");
 
             m_fireLock = true;
             StartCoroutine(ChargeArrow());
+        }
+
+        if (!m_playerState.m_armed && m_playerState.m_aiming && m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("Unarmed"))
+        {
+            Debug.Log("casting magic!");
+
+            m_fireLock = true;
+            StartCoroutine(CastMagic());
         }
     }
 
@@ -228,6 +236,60 @@ public class PlayerAnimationController : MonoBehaviour
         m_playerAnimator.Play("ArmedFire", 1);
         
         m_fireLock = false;
+    }
+
+    IEnumerator CastMagic ()
+    {
+        switch(m_playerState.m_magicMode)
+        {
+            case 0:
+                m_playerAnimator.Play("MagicAttack1", 1);
+
+                AnimatorStateInfo stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+                while (!stateInfo.IsName("MagicAttack1Hold"))
+                {
+                    stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+                    Debug.Log("waiting for animation!");
+                                 
+                    yield return null;
+                }
+
+                while (stateInfo.IsName("MagicAttack1Hold"))
+                {
+                    stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+                    Debug.Log("holding!");
+                                        
+                    if (!m_playerState.m_firing)
+                    {
+                        Debug.Log("stop firing!");                        
+                        break;
+                    }
+
+                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
+                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
+                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
+
+                    yield return null;
+                }
+
+                m_playerAnimator.Play("MagicAttack1Release", 1);
+
+                Debug.Log("releasing hold!");
+
+                break;
+            case 1:
+                m_playerAnimator.Play("MagicAttack2", 1);
+                break;
+            case 2:
+                m_playerAnimator.Play("MagicAttack3", 1);
+                break;
+        }
+
+        m_fireLock = false;
+        yield return null;
     }
 
     private void OnAnimatorMove ()
@@ -291,6 +353,18 @@ public class PlayerAnimationController : MonoBehaviour
         {
             m_playerAnimator.SetLookAtPosition(m_orbitCam.m_hit.point);
             m_playerAnimator.SetLookAtWeight(1.0f);
+
+            switch(m_playerState.m_magicMode)
+            {
+                case 0:
+                    //Aim spine at offset tar (offset equal to offset between right hand and spine transforms)
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    //No body aim
+                    break;
+            }
         }
         else
         {
