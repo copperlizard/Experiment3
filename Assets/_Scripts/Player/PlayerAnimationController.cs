@@ -14,8 +14,10 @@ public class PlayerAnimationController : MonoBehaviour
 
     public GameObject m_bow, m_magic, m_drawnArrow, m_drawingArrow;
 
-    public Transform m_leftHandDrawnArrowTransform;    
-    
+    public Transform m_leftHandDrawnArrowTransform;
+
+    public Vector3 m_magic1AimLine = new Vector3(-.4f, 0.0f, 1.014f), m_magic2AimLine = new Vector3(-.2f, 0.0f, 1.014f), m_magic3AimLine = new Vector3(0.0f, 0.0f, 1.0f);
+
     public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
         m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
 
@@ -26,6 +28,8 @@ public class PlayerAnimationController : MonoBehaviour
     private Transform m_spineTransform, m_leftShoulderTransform, m_rightShoulderTransform;
 
     private Rigidbody m_playerRigidBody;
+
+    private Vector3 m_magicAimLine;
 
     private float m_turn;
 
@@ -60,6 +64,8 @@ public class PlayerAnimationController : MonoBehaviour
 
         m_drawnArrow.SetActive(false);
         m_drawingArrow.SetActive(false);
+
+        m_magicAimLine = m_magic1AimLine;
     }
 	
 	// Update is called once per frame
@@ -262,7 +268,7 @@ public class PlayerAnimationController : MonoBehaviour
 
                     Debug.Log("holding!");
                                         
-                    if (!m_playerState.m_firing)
+                    if (!m_playerState.m_firing || m_playerState.m_magicMode != 0)
                     {
                         Debug.Log("stop firing!");                        
                         break;
@@ -317,7 +323,23 @@ public class PlayerAnimationController : MonoBehaviour
     }
 
     private void OnAnimatorIK (int layer)
-    {        
+    {
+        //Update magic aim line
+        switch(m_playerState.m_magicMode)
+        {
+            case 0:
+                m_magicAimLine = Vector3.Lerp(m_magicAimLine, m_magic1AimLine, 0.1f);
+                break;
+            case 1:
+                m_magicAimLine = Vector3.Lerp(m_magicAimLine, m_magic2AimLine, 0.1f);
+                break;
+            case 2:
+                break;
+            default:
+                break;         
+        }
+
+        //Bow aim
         if (m_playerState.m_aiming && m_playerState.m_armed)
         {
             Vector3 tar = m_orbitCam.m_hit.point;
@@ -349,27 +371,44 @@ public class PlayerAnimationController : MonoBehaviour
 
             m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
         }
+        //Magic aim
         else if (m_playerState.m_aiming)
         {
             m_playerAnimator.SetLookAtPosition(m_orbitCam.m_hit.point);
             m_playerAnimator.SetLookAtWeight(1.0f);
 
-            switch(m_playerState.m_magicMode)
+            Vector3 m_aimPos = m_rightShoulderTransform.position + ((m_rightShoulderTransform.position - m_leftShoulderTransform.position) * 0.5f);
+
+            Vector3 tar = m_orbitCam.m_hit.point;
+            Vector3 toTar = tar - m_aimPos;
+
+            if (Vector3.Dot(transform.forward, toTar) < 0.0f)
             {
-                case 0:
-                    //Aim spine at offset tar (offset equal to offset between right hand and spine transforms)
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    //No body aim
-                    break;
+                //Target out of player COV (wait for rotate)
+
+                Debug.Log("target out of COV");
+
+                return;
             }
+
+            toTar = m_spineTransform.InverseTransformDirection(toTar);
+
+            Quaternion deltaRot = Quaternion.FromToRotation(m_magicAimLine, toTar);
+            
+            m_spineTransform.localRotation *= deltaRot;
+
+            m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
         }
+        //Not aiming
         else
         {
-            m_playerAnimator.SetLookAtWeight(0.0f);
-        }    
+            //m_playerAnimator.SetLookAtWeight(0.0f);
+
+            Vector3 toTar = m_orbitCam.m_hit.point - transform.position;
+
+            m_playerAnimator.SetLookAtWeight(Mathf.SmoothStep(0.5f, 1.0f, Mathf.Clamp(Vector3.Dot(toTar, transform.forward), 0.0f, 1.0f)));
+            m_playerAnimator.SetLookAtPosition(m_orbitCam.m_hit.point);            
+        }
     }
 
     void RotatePlayer (float ang)
