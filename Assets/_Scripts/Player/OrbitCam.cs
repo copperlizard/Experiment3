@@ -18,6 +18,9 @@ public class OrbitCam : MonoBehaviour
     [HideInInspector]
     public float m_dist, m_h, m_v, m_d;
 
+    [HideInInspector]
+    public bool m_hitCurrent = false;
+
     private RaycastHit m_interAt;
     private Quaternion m_rot;
     private Vector3 m_curVel = Vector3.zero;
@@ -139,6 +142,11 @@ public class OrbitCam : MonoBehaviour
         {
             m_hit.point = transform.position + transform.forward * m_maxDist;
             m_hit.normal = Vector3.up;
+            m_hitCurrent = true;
+        }
+        else
+        {
+            m_hitCurrent = false;
         }        
     }
 

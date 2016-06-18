@@ -67,6 +67,7 @@
     <Compile Include="Assets\_Scripts\HUD.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredArrow.cs" />
+    <Compile Include="Assets\_Scripts\Player\MagicBolt.cs" />
     <Compile Include="Assets\_Scripts\Player\OrbitCam.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerAnimationController.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerControlInput.cs" />

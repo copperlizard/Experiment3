@@ -25,12 +25,7 @@ public class FiredArrow : MonoBehaviour
             {
                 transform.rotation = Quaternion.LookRotation(m_rigidBody.velocity);
             }
-
-            //Debug.Log("collisions " + m_rigidBody.detectCollisions.ToString());
         }
-
-        //Debug.DrawLine(transform.position, transform.position + transform.forward * 3.0f);
-
         
 	}
 
@@ -38,11 +33,11 @@ public class FiredArrow : MonoBehaviour
     {
         m_flying = true;
 
-        m_rigidBody.WakeUp();
         m_rigidBody.useGravity = true;
         m_rigidBody.detectCollisions = true;
-        
-        //transform.parent = null;
+        m_rigidBody.isKinematic = false;
+
+        transform.parent = null;
     }
 
     private void OnCollisionEnter (Collision other)
@@ -52,8 +47,8 @@ public class FiredArrow : MonoBehaviour
         m_rigidBody.velocity = Vector3.zero;
         m_rigidBody.useGravity = false;
         m_rigidBody.detectCollisions = false;
-        m_rigidBody.Sleep();
-
+        m_rigidBody.isKinematic = true;
+        
         if (other.rigidbody != null)
         {
             transform.parent = other.transform;

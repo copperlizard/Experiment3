@@ -11,8 +11,9 @@ public class PlayerAnimationController : MonoBehaviour
     //public ObjectPool m_firedArrows;
 
     public List<ObjectPool> m_firedArrows = new List<ObjectPool>();
+    public ObjectPool m_magicBolts;
 
-    public GameObject m_bow, m_magic, m_drawnArrow, m_drawingArrow;
+    public GameObject m_bow, m_magic, m_magicSweep, m_drawnArrow, m_drawingArrow;
 
     public Transform m_leftHandDrawnArrowTransform;
 
@@ -255,29 +256,19 @@ public class PlayerAnimationController : MonoBehaviour
 
                 while (!stateInfo.IsName("MagicAttack1Hold"))
                 {
-                    stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
-
-                    Debug.Log("waiting for animation!");
-                                 
+                    stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);             
                     yield return null;
                 }
 
                 while (stateInfo.IsName("MagicAttack1Hold"))
                 {
                     stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
-
-                    Debug.Log("holding!");
                                         
-                    if (!m_playerState.m_firing || m_playerState.m_magicMode != 0)
-                    {
-                        Debug.Log("stop firing!");                        
+                    if (!m_playerState.m_firing || !m_playerState.m_aiming || m_playerState.m_magicMode != 0)
+                    {                                                
                         break;
                     }
-
-                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
-                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
-                    //SHOOT BOLTS HERE OR ADD FUNCTION AND PUT IT ANIMATION??!!!!!!!!!
-
+                    //SHOOTS BOLTS WITH ANIMATION EVENT/S!
                     yield return null;
                 }
 
@@ -296,6 +287,55 @@ public class PlayerAnimationController : MonoBehaviour
 
         m_fireLock = false;
         yield return null;
+    }
+
+    //Animation event
+    void FireMagicBolt ()
+    {
+        GameObject bolt = m_magicBolts.GetObject();
+
+        Rigidbody boltRB = bolt.GetComponent<Rigidbody>();
+
+        Vector3 toTar = (m_orbitCam.m_hitCurrent) ? m_orbitCam.m_hit.point - m_magic.transform.position : (m_orbitCam.transform.position + m_orbitCam.transform.forward * 10.0f) - m_magic.transform.position;
+
+        bolt.transform.position = m_magic.transform.position;
+        bolt.transform.rotation = Quaternion.LookRotation(toTar);
+
+        bolt.SetActive(true);
+        boltRB.velocity = toTar.normalized * 10.0f;
+    }
+
+    void FireMagicSweep ()
+    {
+        StartCoroutine(MagicSweep());
+    }
+
+    IEnumerator MagicSweep ()
+    {
+        m_magicSweep.SetActive(true);
+
+        AnimatorStateInfo state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+        while(state.IsName("MagicAttack2") && state.normalizedTime < 0.6f && m_playerState.m_aiming)
+        {
+            state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
+
+            RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 1.0f, 0.5f, m_magicSweep.transform.forward, 2.0f, ~LayerMask.GetMask("Player", "Arrows"));
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if(hits[i].rigidbody != null)
+                {
+                    hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * 40.0f, ForceMode.Impulse);
+                }
+            }
+
+            yield return null;
+        }
+
+        m_magicSweep.SetActive(false);
+
+        //Debug.Log("done sweeping!");        
     }
 
     private void OnAnimatorMove ()

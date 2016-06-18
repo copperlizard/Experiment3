@@ -36,6 +36,7 @@ public class PlayerMovementController : MonoBehaviour
         m_playerState.m_grounded = CheckGround();
         m_playerState.m_crouching = CheckHead();
 
+        /*
         // Airborne move
         if (!m_playerState.m_grounded)
         {
@@ -43,6 +44,7 @@ public class PlayerMovementController : MonoBehaviour
             h = 0.0f;
             return;
         }
+        */
 
         Vector3 move = new Vector3(h, 0.0f, v).normalized;
         

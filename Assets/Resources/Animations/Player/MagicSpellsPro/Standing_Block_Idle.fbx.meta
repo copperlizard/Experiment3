@@ -185,7 +185,87 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.09987866
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.20024265
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.30036652
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.40012524
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.5004899
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.60012466
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.69986796
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.79998595
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.8996203
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.99130434
+        functionName: FireMagicBolt
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 5ee851208e730d6459cc6ce57c7fdcc8,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask:
       - path: 
         weight: 1
