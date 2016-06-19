@@ -12,6 +12,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public List<ObjectPool> m_firedArrows = new List<ObjectPool>();
     public ObjectPool m_magicBolts;
+    public ObjectPool m_magicTraps;
 
     public GameObject m_bow, m_magic, m_magicSweep, m_drawnArrow, m_drawingArrow;
 
@@ -195,7 +196,7 @@ public class PlayerAnimationController : MonoBehaviour
 
         if (!m_playerState.m_armed && m_playerState.m_aiming && m_playerState.m_firing && !m_fireLock && torsoStateInfo.IsName("Unarmed"))
         {
-            Debug.Log("casting magic!");
+            //Debug.Log("casting magic!");
 
             m_fireLock = true;
             StartCoroutine(CastMagic());
@@ -274,7 +275,7 @@ public class PlayerAnimationController : MonoBehaviour
 
                 m_playerAnimator.Play("MagicAttack1Release", 1);
 
-                Debug.Log("releasing hold!");
+                //Debug.Log("releasing hold!");
 
                 break;
             case 1:
@@ -320,13 +321,15 @@ public class PlayerAnimationController : MonoBehaviour
         {
             state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
-            RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 1.0f, 0.5f, m_magicSweep.transform.forward, 2.0f, ~LayerMask.GetMask("Player", "Arrows"));
+            RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 2.0f, 0.5f, m_magicSweep.transform.forward, 0.0f, ~LayerMask.GetMask("Player", "Arrows"));
 
             for (int i = 0; i < hits.Length; i++)
             {
                 if(hits[i].rigidbody != null)
                 {
-                    hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * 40.0f, ForceMode.Impulse);
+                    float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);                    
+
+                    hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);
                 }
             }
 
@@ -336,6 +339,33 @@ public class PlayerAnimationController : MonoBehaviour
         m_magicSweep.SetActive(false);
 
         //Debug.Log("done sweeping!");        
+    }
+
+    void FireMagicTrap ()
+    {
+        Debug.Log("firing trap!");
+
+        GameObject trap = m_magicTraps.GetObject();
+
+        Vector3 toTar = m_orbitCam.m_hit.point - transform.position;
+             
+        if (toTar.magnitude > 20.0f || !m_orbitCam.m_hitCurrent)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(m_orbitCam.transform.position + m_orbitCam.transform.forward * 20.0f, -transform.up, out hit))
+            {
+                trap.transform.position = hit.point;
+                trap.transform.up = hit.normal;
+            }                
+        }
+        else
+        {
+            trap.transform.position = m_orbitCam.m_hit.point;
+            trap.transform.up = m_orbitCam.m_hit.normal;
+        }
+
+        trap.SetActive(true);
+        
     }
 
     private void OnAnimatorMove ()
@@ -424,10 +454,7 @@ public class PlayerAnimationController : MonoBehaviour
 
             if (Vector3.Dot(transform.forward, toTar) < 0.0f)
             {
-                //Target out of player COV (wait for rotate)
-
-                Debug.Log("target out of COV");
-
+                //Target out of player COV (wait for rotate)                
                 return;
             }
 
