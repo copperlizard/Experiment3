@@ -142,11 +142,11 @@ public class OrbitCam : MonoBehaviour
         {
             m_hit.point = transform.position + transform.forward * m_maxDist;
             m_hit.normal = Vector3.up;
-            m_hitCurrent = true;
+            m_hitCurrent = false;
         }
         else
         {
-            m_hitCurrent = false;
+            m_hitCurrent = true;
         }        
     }
 

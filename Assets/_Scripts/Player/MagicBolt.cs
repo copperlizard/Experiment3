@@ -8,7 +8,7 @@ public class MagicBolt : MonoBehaviour
 {
     public GameObject m_bolt, m_burst;
 
-    public float m_maxLife = 3.0f, m_burstTime = 1.0f;
+    public float m_maxLife = 3.0f, m_burstTime = 1.0f, m_burstRadius = 0.5f, m_burstForce = 5.0f;
 
     private Rigidbody m_rigidBody;
 
@@ -53,6 +53,19 @@ public class MagicBolt : MonoBehaviour
 
         m_bolt.SetActive(false);
         m_burst.SetActive(true);
+
+        Collider[] hits;
+        hits = Physics.OverlapSphere(transform.position, m_burstRadius, ~LayerMask.GetMask("Arrows"));
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].attachedRigidbody != null)
+            {
+                hits[i].attachedRigidbody.AddExplosionForce(m_burstForce, transform.position, m_burstRadius, 0.5f, ForceMode.Impulse);
+            }
+        }
+
+
         StartCoroutine(deactivateTimer(m_burstTime));
     }
 

@@ -25,6 +25,9 @@ public class MagicTrap : MonoBehaviour
     {
         m_triggered = false;
 
+        m_triggeredEffect.SetActive(false);
+        m_trapEffect.SetActive(true);
+
         StartCoroutine(TriggerTimer(m_triggerTime));
     }
 
@@ -52,7 +55,7 @@ public class MagicTrap : MonoBehaviour
         float startTime = Time.time;
         while (Time.time < startTime + time)
         {
-            RaycastHit[] hits = Physics.CapsuleCastAll(transform.position, transform.position + transform.up * 2.0f, 0.5f, transform.up, 0.0f);
+            RaycastHit[] hits = Physics.CapsuleCastAll(transform.position - transform.up * 0.25f, transform.position + transform.up * 2.0f, 1.0f, transform.up, 0.0f);
 
             for (int i = 0; i < hits.Length; i++)
             {
@@ -73,6 +76,7 @@ public class MagicTrap : MonoBehaviour
 
     IEnumerator TriggerTimer (float time)
     {
-        yield return null;
+        yield return new WaitForSeconds(time);
+        TriggerTrap();
     }
 }

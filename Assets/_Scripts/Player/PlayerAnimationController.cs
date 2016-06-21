@@ -321,7 +321,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
-            RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 2.0f, 0.5f, m_magicSweep.transform.forward, 0.0f, ~LayerMask.GetMask("Player", "Arrows"));
+            RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 6.0f, 0.5f, m_magicSweep.transform.forward, 0.0f, ~LayerMask.GetMask("Player", "Arrows"));
 
             for (int i = 0; i < hits.Length; i++)
             {
@@ -330,6 +330,7 @@ public class PlayerAnimationController : MonoBehaviour
                     float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);                    
 
                     hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);
+                    hits[i].rigidbody.AddForce(transform.up * (10.0f + 10.0f * distMod), ForceMode.Impulse);
                 }
             }
 
@@ -343,29 +344,39 @@ public class PlayerAnimationController : MonoBehaviour
 
     void FireMagicTrap ()
     {
-        Debug.Log("firing trap!");
+        //Debug.Log("firing trap!");
 
         GameObject trap = m_magicTraps.GetObject();
 
         Vector3 toTar = m_orbitCam.m_hit.point - transform.position;
+
+        //Debug.Log("toTar.magnitude == " + toTar.magnitude.ToString());
+
+        //Debug.Log("hit current == " + m_orbitCam.m_hitCurrent.ToString());
              
         if (toTar.magnitude > 20.0f || !m_orbitCam.m_hitCurrent)
         {
+            //Debug.Log("dropping trap!");
+
             RaycastHit hit;
             if (Physics.Raycast(m_orbitCam.transform.position + m_orbitCam.transform.forward * 20.0f, -transform.up, out hit))
             {
                 trap.transform.position = hit.point;
-                trap.transform.up = hit.normal;
-            }                
+                trap.transform.up = hit.normal;                
+            }                        
         }
         else
         {
+            //Debug.Log("placing trap!");
+
             trap.transform.position = m_orbitCam.m_hit.point;
             trap.transform.up = m_orbitCam.m_hit.normal;
         }
 
         trap.SetActive(true);
-        
+
+        //Debug.DrawLine(transform.position, transform.position + toTar, Color.blue, 0.5f);
+        //Debug.DrawLine(transform.position, trap.transform.position, Color.red, 0.5f);        
     }
 
     private void OnAnimatorMove ()

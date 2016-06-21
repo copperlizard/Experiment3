@@ -1,21 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(Rigidbody))]
-public class FiredArrow : MonoBehaviour
+public class FiredGravityArrow : MonoBehaviour
 {
     private Rigidbody m_rigidBody;
 
     private bool m_flying = true;
 
-	// Use this for initialization
-	void Awake ()
+    // Use this for initialization
+    void Awake()
     {
-        m_rigidBody = GetComponent<Rigidbody>();	
-	}
-	
-	// Update is called once per frame
-	void Update ()
+        m_rigidBody = GetComponent<Rigidbody>();
+    }
+
+    // Update is called once per frame
+    void Update()
     {
         if (m_flying)
         {
@@ -24,10 +23,10 @@ public class FiredArrow : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(m_rigidBody.velocity);
             }
         }
-        
-	}
 
-    private void OnEnable ()
+    }
+
+    private void OnEnable()
     {
         m_flying = true;
 
@@ -38,18 +37,18 @@ public class FiredArrow : MonoBehaviour
         transform.parent = null;
     }
 
-    private void OnCollisionEnter (Collision other)
-    {        
+    private void OnCollisionEnter(Collision other)
+    {
         m_flying = false;
 
         m_rigidBody.velocity = Vector3.zero;
         m_rigidBody.useGravity = false;
         m_rigidBody.detectCollisions = false;
         m_rigidBody.isKinematic = true;
-        
+
         if (other.rigidbody != null)
         {
             transform.parent = other.transform;
-        }        
+        }
     }
 }
