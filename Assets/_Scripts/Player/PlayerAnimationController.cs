@@ -397,9 +397,16 @@ public class PlayerAnimationController : MonoBehaviour
                 v *= m_sprintSpeedModifier;
             }
 
-            // we preserve the existing y part of the current velocity.
-            v.y = m_playerRigidBody.velocity.y;
-            m_playerRigidBody.velocity = v;
+            if (!m_playerState.m_gravLocked)
+            {
+                // we preserve the existing y part of the current velocity.
+                v.y = m_playerRigidBody.velocity.y;
+                m_playerRigidBody.velocity = v;
+            }
+            else
+            {
+                // preserve player velocity                
+            }
         }
     }
 
