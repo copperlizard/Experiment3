@@ -327,10 +327,12 @@ public class PlayerAnimationController : MonoBehaviour
             {
                 if(hits[i].rigidbody != null)
                 {
-                    float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);                    
+                    float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);
 
-                    hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);
-                    hits[i].rigidbody.AddForce(transform.up * (10.0f + 10.0f * distMod), ForceMode.Impulse);
+                    //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);
+                    //hits[i].rigidbody.AddForce(transform.up * (10.0f + 10.0f * distMod), ForceMode.Impulse);
+
+                    hits[i].rigidbody.AddExplosionForce(60.0f, m_magicSweep.transform.position, 6.5f, 0.5f, ForceMode.Impulse);
                 }
             }
 

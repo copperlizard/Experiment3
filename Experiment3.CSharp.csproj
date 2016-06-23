@@ -63,10 +63,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\FiredAirBurstArrow.cs" />
     <Compile Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
-    <Compile Include="Assets\_Scripts\HUD.cs" />
+    <Compile Include="Assets\_Scripts\HUD\ArrowsPanel.cs" />
+    <Compile Include="Assets\_Scripts\HUD\HUD.cs" />
+    <Compile Include="Assets\_Scripts\HUD\PlayerStatusPanel.cs" />
+    <Compile Include="Assets\_Scripts\HUD\SpellsPanel.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnArrow.cs" />
+    <Compile Include="Assets\_Scripts\Player\FiredAirBurstArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredGravityArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\MagicBolt.cs" />
@@ -76,6 +79,7 @@
     <Compile Include="Assets\_Scripts\Player\PlayerControlInput.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerMovementController.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerStateInfo.cs" />
+    <Compile Include="Assets\_Scripts\Utility\GameManager.cs" />
     <Compile Include="Assets\_Scripts\Utility\ObjectPool.cs" />
   </ItemGroup>
   <ItemGroup>
