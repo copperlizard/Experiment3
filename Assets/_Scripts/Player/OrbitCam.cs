@@ -4,14 +4,23 @@ using System.Collections;
 [RequireComponent(typeof(Camera))]
 public class OrbitCam : MonoBehaviour
 {
-    public GameObject m_target; //cam follow target
+    public GameObject m_target; //m_target == cam follow target
+
+    public GameManager m_GameManager;
+
     public RaycastHit m_hit; //player target
+
     public Vector3 m_zoomTarShift = new Vector3(0.2f, 0.0f, 0.0f);
-    public float m_minDist = 0.0f, m_maxDist = 100.0f, m_startDist = 5.0f, m_zoomDist = 2.0f, m_minTilt, m_maxTilt, m_hidePlayerDist, m_rotSpeed, m_damp, m_fudge;
+
+    public float m_minDist = 0.0f, m_maxDist = 100.0f, m_startDist = 5.0f, m_zoomDist = 1.8f, 
+        m_minTilt = -50.0f, m_maxTilt = 45.0f, m_hidePlayerDist = 0.5f, m_rotSpeed = 2.5f, 
+        m_damp = 0.0001f, m_fudge = 0.05f;
+
     public bool m_HideCursor = true, m_rightClickZoom = true;
     
     [HideInInspector]
     public Camera m_thisCam;
+
     [HideInInspector]
     public LayerMask m_thisLayerMask;
 
@@ -22,8 +31,11 @@ public class OrbitCam : MonoBehaviour
     public bool m_hitCurrent = false;
 
     private RaycastHit m_interAt;
+
     private Quaternion m_rot;
+
     private Vector3 m_curVel = Vector3.zero;
+
     private bool m_playerHidden = false, m_zoom = false;
 
 	// Use this for initialization
@@ -31,7 +43,6 @@ public class OrbitCam : MonoBehaviour
     {
         m_thisCam = GetComponent<Camera>();
         m_thisLayerMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
-
 
         m_dist = m_startDist;
         transform.position = m_target.transform.position + new Vector3(0.0f, 0.0f, -m_dist);
@@ -45,13 +56,13 @@ public class OrbitCam : MonoBehaviour
         {
             Cursor.visible = true;
         }
+        
+        m_GameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player == null)
+        if (m_GameManager == null)
         {
-            Debug.Log("no player found! (ensure player tagged player)");
-        }      
+            Debug.Log("no game manager!");
+        }             
 	}
 
     // Update is called once per frame
@@ -152,12 +163,15 @@ public class OrbitCam : MonoBehaviour
 
     public void GetInput ()
     {
-        bool aiming = Input.GetMouseButton(1);
-        m_h += Input.GetAxis("Mouse X") * ((aiming) ? 0.5f : 1.0f);
-        m_v -= Input.GetAxis("Mouse Y") * ((aiming) ? 0.5f : 1.0f);
-        //m_d = Input.GetAxis("Mouse ScrollWheel");
+        if (!m_GameManager.m_paused)
+        {
+            bool aiming = Input.GetMouseButton(1);
+            m_h += Input.GetAxis("Mouse X") * ((aiming) ? 0.5f : 1.0f);
+            m_v -= Input.GetAxis("Mouse Y") * ((aiming) ? 0.5f : 1.0f);
+            //m_d = Input.GetAxis("Mouse ScrollWheel");
 
-        m_zoom = Input.GetButton("Fire2");
+            m_zoom = Input.GetButton("Fire2");
+        }        
     }
 
     Vector3 IntersectCheck (Vector3 target)

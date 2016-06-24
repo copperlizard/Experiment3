@@ -9,7 +9,7 @@ public class FiredGravityArrow : MonoBehaviour
 
     private Rigidbody m_rigidBody;
 
-    private PlayerStateInfo m_trappedPlayer;
+    private PlayerStateInfo m_trappedPlayerState;
 
     private bool m_flying = true;
 
@@ -60,51 +60,58 @@ public class FiredGravityArrow : MonoBehaviour
 
         float startTime = Time.time;
 
+        //apply grav force
         while (startTime + m_gravEffectTime > Time.time)
         {
-            //apply grav force
-
             Collider[] hits = Physics.OverlapSphere(transform.position, m_gravEffectRadius);
-
-            if (m_trappedPlayer != null)
+            
+            //Give player escape chance
+            if (m_trappedPlayerState != null)
             {
-                if (m_trappedPlayer.m_gravLocked)
+                if (m_trappedPlayerState.m_gravLocked)
                 {
-                    m_trappedPlayer.m_gravLocked = false;
+                    m_trappedPlayerState.m_gravLocked = false;
                 }
-            }
+            }                        
 
             for (int i = 0; i < hits.Length; i++)
-            {                
+            {
+                //Player trapped                
                 if (hits[i].tag == "Player")
                 {
-                    m_trappedPlayer = hits[i].GetComponent<PlayerStateInfo>();
-                    m_trappedPlayer.m_gravLocked = true;                                        
+                    if (m_trappedPlayerState == null)
+                    {
+                        m_trappedPlayerState = hits[i].GetComponent<PlayerStateInfo>();
+                    }
+                    
+                    m_trappedPlayerState.m_gravLocked = true;                                        
                 }                
 
                 if (hits[i].attachedRigidbody != null)
                 {
-                    hits[i].attachedRigidbody.AddExplosionForce(-m_gravEffectForce, transform.position, m_gravEffectRadius * 2.0f, -0.5f);
+                    hits[i].attachedRigidbody.AddExplosionForce(-m_gravEffectForce * Time.timeScale, transform.position, m_gravEffectRadius * 2.0f, -0.5f);
                 }
             }
-
-            if (m_trappedPlayer != null)
+            
+            //Player escaped
+            if (m_trappedPlayerState != null)
             {
-                if (!m_trappedPlayer.m_gravLocked)
+                if (!m_trappedPlayerState.m_gravLocked)
                 {
-                    m_trappedPlayer = null;
+                    m_trappedPlayerState = null;
                 }
-            }
+            }            
 
             yield return null;
         }
 
-        if (m_trappedPlayer != null)
+        //Free player
+        if (m_trappedPlayerState != null)
         {
-            if (m_trappedPlayer.m_gravLocked)
+            if (m_trappedPlayerState.m_gravLocked)
             {
-                m_trappedPlayer.m_gravLocked = false;
-                m_trappedPlayer = null;
+                m_trappedPlayerState.m_gravLocked = false;
+                m_trappedPlayerState = null;
             }
         }
 
@@ -113,17 +120,16 @@ public class FiredGravityArrow : MonoBehaviour
 
         startTime = Time.time;
 
+        //apply explode force
         while (startTime + m_endGravEffectTime > Time.time)
         {
-            //apply explode force
-
             Collider[] hits = Physics.OverlapSphere(transform.position, m_gravEffectRadius);
 
             for (int i = 0; i < hits.Length; i++)
             {
                 if (hits[i].attachedRigidbody != null)
                 {
-                    hits[i].attachedRigidbody.AddExplosionForce(m_endGravEffectForce, transform.position, m_gravEffectRadius, 0.5f);
+                    hits[i].attachedRigidbody.AddExplosionForce(m_endGravEffectForce * Time.timeScale, transform.position, m_gravEffectRadius, 0.5f);
                 }
             }
 

@@ -91,7 +91,7 @@ public class FiredAirBurstArrow : MonoBehaviour
 
                 if (hits[i].rigidbody != null && coneCheck > m_coneFactor)
                 {
-                    hits[i].rigidbody.AddExplosionForce(400.0f, transform.position, m_airBurstRange + 2.0f);   
+                    hits[i].rigidbody.AddExplosionForce(400.0f * Time.timeScale, transform.position, m_airBurstRange + 2.0f);   
                 }
             }
 

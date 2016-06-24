@@ -4,11 +4,13 @@ using System.Collections;
 public class GameManager : MonoBehaviour
 {
     public GameObject m_player, m_pauseMenu;
-
+    
+    [HideInInspector]
+    public bool m_paused = false;
 
     private PlayerStateInfo m_playerState;
 
-    private bool m_paused = false, m_pauseLock = false;
+    private bool m_pauseLock = false;
 
     // Use this for initialization
     void Start ()
