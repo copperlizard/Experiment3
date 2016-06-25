@@ -5,6 +5,8 @@ using System.Collections;
 [RequireComponent(typeof(PlayerMovementController))]
 public class PlayerControlInput : MonoBehaviour
 {
+    public GameManager m_gameManager;
+
     private PlayerStateInfo m_playerState;
     private PlayerMovementController m_playerMover;
 
@@ -17,11 +19,21 @@ public class PlayerControlInput : MonoBehaviour
     {
         m_playerState = GetComponent<PlayerStateInfo>();
         m_playerMover = GetComponent<PlayerMovementController>();
+
+        if (m_gameManager == null)
+        {
+            m_gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
+        }
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if (m_gameManager.m_paused)
+        {
+            return;
+        }
+
         m_v = Input.GetAxis("Vertical");
         m_h = Input.GetAxis("Horizontal");
 

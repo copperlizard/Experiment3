@@ -5,7 +5,7 @@ public class FiredAirBurstArrow : MonoBehaviour
 {
     public GameObject m_airBurstEffect;
 
-    public float m_airBurstRange = 5.0f, m_airBurstTime = 3.0f, m_coneFactor = 0.5f;
+    public float m_airBurstRange = 5.0f, m_airBurstTime = 3.0f, m_coneFactor = 0.5f, m_airBurstForce = 30000;
 
     private Rigidbody m_rigidBody;
 
@@ -91,7 +91,7 @@ public class FiredAirBurstArrow : MonoBehaviour
 
                 if (hits[i].rigidbody != null && coneCheck > m_coneFactor)
                 {
-                    hits[i].rigidbody.AddExplosionForce(400.0f * Time.timeScale, transform.position, m_airBurstRange + 2.0f);   
+                    hits[i].rigidbody.AddExplosionForce(m_airBurstForce * Time.deltaTime, transform.position, m_airBurstRange + 2.0f);   
                 }
             }
 

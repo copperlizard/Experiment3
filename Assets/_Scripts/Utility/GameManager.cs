@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
         {
             m_player = GameObject.FindGameObjectWithTag("Player");
         }
-
+        
         m_playerState = m_player.GetComponent<PlayerStateInfo>();
     }
 	
@@ -41,9 +41,8 @@ public class GameManager : MonoBehaviour
             m_pauseMenu.SetActive(true);
             Time.timeScale = 0.0f;
 
-            Cursor.lockState = CursorLockMode.None;
+            Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
-
         }
         else if (!m_paused && m_pauseMenu.activeInHierarchy)
         {

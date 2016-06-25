@@ -63,7 +63,8 @@ public class MagicTrap : MonoBehaviour
                 {
                     float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - transform.position).magnitude / 3.0f), 0.0f, 1.0f);
 
-                    hits[i].rigidbody.AddForce(transform.up * (20.0f + 20.0f * distMod), ForceMode.Impulse);
+                    //hits[i].rigidbody.AddForce(transform.up * (20.0f + 20.0f * distMod) * Time.deltaTime, ForceMode.Impulse);
+                    hits[i].rigidbody.AddExplosionForce(6000.0f * Time.deltaTime, transform.position, 2.0f, 1.0f, ForceMode.Impulse);
                 }
             }
 

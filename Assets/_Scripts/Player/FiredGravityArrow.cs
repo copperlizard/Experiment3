@@ -5,7 +5,7 @@ public class FiredGravityArrow : MonoBehaviour
 {
     public GameObject m_gravEffect, m_endGravEffect;
 
-    public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 10.0f, m_endGravEffectForce = 5.0f;
+    public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 60000.0f, m_endGravEffectForce = 10000.0f;
 
     private Rigidbody m_rigidBody;
 
@@ -89,7 +89,7 @@ public class FiredGravityArrow : MonoBehaviour
 
                 if (hits[i].attachedRigidbody != null)
                 {
-                    hits[i].attachedRigidbody.AddExplosionForce(-m_gravEffectForce * Time.timeScale, transform.position, m_gravEffectRadius * 2.0f, -0.5f);
+                    hits[i].attachedRigidbody.AddExplosionForce(-m_gravEffectForce * Time.deltaTime, transform.position, m_gravEffectRadius * 2.0f, -0.5f);
                 }
             }
             
@@ -129,7 +129,7 @@ public class FiredGravityArrow : MonoBehaviour
             {
                 if (hits[i].attachedRigidbody != null)
                 {
-                    hits[i].attachedRigidbody.AddExplosionForce(m_endGravEffectForce * Time.timeScale, transform.position, m_gravEffectRadius, 0.5f);
+                    hits[i].attachedRigidbody.AddExplosionForce(m_endGravEffectForce * Time.deltaTime, transform.position, m_gravEffectRadius, 0.5f);
                 }
             }
 

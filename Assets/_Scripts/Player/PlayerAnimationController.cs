@@ -7,9 +7,7 @@ using System.Collections.Generic;
 public class PlayerAnimationController : MonoBehaviour
 {
     public Camera m_cam;
-
-    //public ObjectPool m_firedArrows;
-
+    
     public List<ObjectPool> m_firedArrows = new List<ObjectPool>();
     public ObjectPool m_magicBolts;
     public ObjectPool m_magicTraps;
@@ -45,7 +43,7 @@ public class PlayerAnimationController : MonoBehaviour
             m_cam = Camera.main;
         }
         m_orbitCam = m_cam.GetComponent<OrbitCam>();
-
+        
         m_playerState = GetComponent<PlayerStateInfo>();
 
         m_playerAnimator = GetComponent<Animator>();
@@ -325,14 +323,13 @@ public class PlayerAnimationController : MonoBehaviour
 
             for (int i = 0; i < hits.Length; i++)
             {
-                if(hits[i].rigidbody != null)
+                if(hits[i].rigidbody != null && hits[i].transform.tag != "Player")
                 {
                     float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);
 
-                    //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);
-                    //hits[i].rigidbody.AddForce(transform.up * (10.0f + 10.0f * distMod), ForceMode.Impulse);
+                    //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);                    
 
-                    hits[i].rigidbody.AddExplosionForce(60.0f, m_magicSweep.transform.position, 6.5f, 0.5f, ForceMode.Impulse);
+                    hits[i].rigidbody.AddExplosionForce(3000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 0.95f, ForceMode.Impulse);                    
                 }
             }
 
@@ -415,7 +412,7 @@ public class PlayerAnimationController : MonoBehaviour
     private void OnAnimatorIK (int layer)
     {
         //Update magic aim line
-        switch(m_playerState.m_magicMode)
+        switch (m_playerState.m_magicMode)
         {
             case 0:
                 m_magicAimLine = Vector3.Lerp(m_magicAimLine, m_magic1AimLine, 0.1f);
@@ -515,6 +512,8 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (m_playerState.m_jumping && m_playerState.m_grounded)
         {
+            Debug.Log("Jumping!");
+
             m_playerState.m_grounded = false;
             m_playerState.m_jumping = false;
             m_playerRigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.VelocityChange);

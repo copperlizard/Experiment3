@@ -73,8 +73,10 @@ public class PlayerMovementController : MonoBehaviour
         */
 
         RaycastHit hit;
-        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out hit, m_groundCheckDist))
+        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out hit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble")))
         {
+            Debug.Log("hit " + hit.transform.name);
+
             m_groundNormal = hit.normal;
             return true;
         }
