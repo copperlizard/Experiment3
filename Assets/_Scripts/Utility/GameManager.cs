@@ -54,4 +54,17 @@ public class GameManager : MonoBehaviour
             Cursor.visible = false;
         }
     }
+
+    public void PauseButton ()
+    {
+        m_paused = !m_paused;        
+    }
+
+    public void GameQuit ()
+    {
+        if (Application.isPlaying)
+        {
+            Application.Quit();
+        }
+    }
 }

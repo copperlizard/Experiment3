@@ -42,7 +42,7 @@ public class OrbitCam : MonoBehaviour
 	public virtual void Start ()
     {
         m_thisCam = GetComponent<Camera>();
-        m_thisLayerMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
+        m_thisLayerMask = ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast");
 
         m_dist = m_startDist;
         transform.position = m_target.transform.position + new Vector3(0.0f, 0.0f, -m_dist);
