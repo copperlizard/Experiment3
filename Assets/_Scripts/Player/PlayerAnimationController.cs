@@ -18,8 +18,9 @@ public class PlayerAnimationController : MonoBehaviour
 
     public Vector3 m_magic1AimLine = new Vector3(-.4f, 0.0f, 1.014f), m_magic2AimLine = new Vector3(-.2f, 0.0f, 1.014f), m_magic3AimLine = new Vector3(0.0f, 0.0f, 1.0f);
 
-    public float m_jumpForce = 1.0f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_crouchSpeedModifier = 1.0f,
-        m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
+    public float m_jumpForce = 1.0f, m_jumpChargeRate = 0.1f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, 
+        m_crouchSpeedModifier = 1.0f, m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, 
+        m_movingTurnSpeed = 360.0f, m_standingHeight = 2.0f, m_crouchHeight = 1.7f;
 
     private OrbitCam m_orbitCam;
     private PlayerStateInfo m_playerState;
@@ -29,11 +30,13 @@ public class PlayerAnimationController : MonoBehaviour
 
     private Rigidbody m_playerRigidBody;
 
+    private CapsuleCollider m_playerCollider;
+
     private Vector3 m_magicAimLine;
 
-    private float m_turn;
+    private float m_turn, m_jumpCharge;
 
-    private bool m_fireLock = false;
+    private bool m_fireLock = false, m_jumpLock = false;
 
     // Use this for initialization
     void Start ()
@@ -66,6 +69,8 @@ public class PlayerAnimationController : MonoBehaviour
         m_drawingArrow.SetActive(false);
 
         m_magicAimLine = m_magic1AimLine;
+
+        m_playerCollider = GetComponent<CapsuleCollider>();
     }
 	
 	// Update is called once per frame
@@ -137,24 +142,28 @@ public class PlayerAnimationController : MonoBehaviour
 
         PlayerJump();
 
+        //Adjust playerbubble collider height for crouching
+        if (m_playerState.m_crouching && m_playerCollider.height > m_crouchHeight)
+        {
+            m_playerCollider.height = m_crouchHeight;
+            m_playerCollider.center = new Vector3(0.0f, m_crouchHeight * 0.5f, 0.0f);
+        }
+        else if (!m_playerState.m_crouching && m_playerCollider.height < m_standingHeight)
+        {
+            m_playerCollider.height = m_standingHeight;
+            m_playerCollider.center = new Vector3(0.0f, m_standingHeight * 0.5f, 0.0f);
+        }
+
         // update the animator parameters
         m_playerAnimator.SetLayerWeight(1, (m_playerState.m_aiming) ? Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 1.0f, 0.1f) : Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //set aiming layer weight
         m_playerAnimator.SetFloat("Forward", m_playerState.m_forwardAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Sideways", m_playerState.m_sidewaysAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Turn", m_turn, 0.1f, Time.deltaTime);
+        m_playerAnimator.SetFloat("Jump", m_playerRigidBody.velocity.y);
         m_playerAnimator.SetBool("OnGround", m_playerState.m_grounded);
         m_playerAnimator.SetBool("Aiming", m_playerState.m_aiming);
         m_playerAnimator.SetBool("Crouch", m_playerState.m_crouching);
         m_playerAnimator.SetBool("Armed", m_playerState.m_armed);
-
-        if (!m_playerState.m_grounded)
-        {
-            m_playerAnimator.SetFloat("Jump", m_playerRigidBody.velocity.y);
-        }
-
-        // check if sliding
-        AnimatorStateInfo curAnimState = m_playerAnimator.GetCurrentAnimatorStateInfo(0);
-        bool isSliding = curAnimState.IsName("Sliding");
 
         // calculate which leg is behind, so as to leave that leg trailing in the jump animation
         // (This code is reliant on the specific run cycle offset in our animations,
@@ -163,7 +172,7 @@ public class PlayerAnimationController : MonoBehaviour
             Mathf.Repeat(
                 m_playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_runCycleLegOffset, 1);
         float jumpLeg = (runCycle < 0.5f ? 1 : -1) * m_playerState.m_forwardAmount;
-        if (m_playerState.m_grounded && !isSliding)
+        if (m_playerState.m_grounded)
         {
             m_playerAnimator.SetFloat("JumpLeg", jumpLeg);
         }
@@ -329,7 +338,7 @@ public class PlayerAnimationController : MonoBehaviour
 
                     //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);                    
 
-                    hits[i].rigidbody.AddExplosionForce(3000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 0.95f, ForceMode.Impulse);                    
+                    hits[i].rigidbody.AddExplosionForce(3000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);                    
                 }
             }
 
@@ -510,14 +519,46 @@ public class PlayerAnimationController : MonoBehaviour
 
     void PlayerJump()
     {
+        /*
         if (m_playerState.m_jumping && m_playerState.m_grounded)
         {
-            Debug.Log("Jumping!");
-
             m_playerState.m_grounded = false;
             m_playerState.m_jumping = false;
             m_playerRigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.VelocityChange);
+            //m_playerRigidBody.velocity = m_playerRigidBody.velocity + new Vector3(0.0f, m_jumpForce * Time.deltaTime, 0.0f);
         }
+        */
+
+        if (m_playerState.m_jumping && !m_jumpLock)
+        {
+            m_jumpLock = true;
+            StartCoroutine(ChargeJump());
+        }        
+    }
+
+    IEnumerator ChargeJump ()
+    {
+        while(m_playerState.m_jumping)
+        {
+            m_jumpCharge = Mathf.SmoothStep(m_jumpCharge, 1.0f, m_jumpChargeRate);
+
+            Debug.Log("m_jumpCharge == " + m_jumpCharge.ToString());
+
+            yield return null;
+        }
+
+        if (m_playerState.m_grounded)
+        {
+            m_playerState.m_grounded = false;
+            m_playerState.m_jumping = false;
+            m_playerRigidBody.AddForce(Vector3.up * (m_jumpForce * Mathf.Clamp(m_jumpCharge, 0.2f, 1.0f)), ForceMode.VelocityChange);
+
+            m_jumpCharge = 0.0f;
+        }
+
+        m_jumpLock = false;
+
+        yield return null;
     }
 
     void DrawingArrow ()

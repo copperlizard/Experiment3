@@ -31,21 +31,14 @@ public class PlayerMovementController : MonoBehaviour
 	
 	}
 
-    public void Move (float v, float h)
+    void FixedUpdate ()
     {
         m_playerState.m_grounded = CheckGround();
         m_playerState.m_crouching = CheckHead();
+    }
 
-        /*
-        // Airborne move
-        if (!m_playerState.m_grounded)
-        {
-            v = 0.0f;
-            h = 0.0f;
-            return;
-        }
-        */
-
+    public void Move (float v, float h)
+    {
         Vector3 move = new Vector3(h, 0.0f, v).normalized;
         
         // Apply move speed modifier
@@ -75,8 +68,6 @@ public class PlayerMovementController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out hit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble")))
         {
-            Debug.Log("hit " + hit.transform.name);
-
             m_groundNormal = hit.normal;
             return true;
         }
