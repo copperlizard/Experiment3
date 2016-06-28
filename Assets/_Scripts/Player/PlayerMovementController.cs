@@ -10,6 +10,8 @@ public class PlayerMovementController : MonoBehaviour
 
     private PlayerStateInfo m_playerState;
 
+    private Rigidbody m_playerRigidbody;
+
     private Vector3 m_groundNormal;
 
     private float m_sprintInputModifier = 2.0f;
@@ -23,6 +25,8 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         m_playerState = GetComponent<PlayerStateInfo>();
+
+        m_playerRigidbody = GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame
@@ -54,6 +58,11 @@ public class PlayerMovementController : MonoBehaviour
         else
         {
             AimMove(move);
+        }
+
+        if (!m_playerState.m_grounded)
+        {
+            AirMove(move);
         }
     }
 
@@ -143,5 +152,13 @@ public class PlayerMovementController : MonoBehaviour
         Vector3 localMove = transform.InverseTransformVector(move);
         m_playerState.m_forwardAmount = localMove.z;
         m_playerState.m_sidewaysAmount = localMove.x;
+    }
+
+    private void AirMove (Vector3 move)
+    {
+        // Rotate input to match camera
+        move = Quaternion.Euler(0.0f, m_cam.transform.eulerAngles.y, 0.0f) * move;
+
+        m_playerRigidbody.AddForce(move * 100.0f);
     }
 }

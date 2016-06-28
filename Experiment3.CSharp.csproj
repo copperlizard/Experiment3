@@ -64,6 +64,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
+    <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAI.cs" />
+    <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAnimationController.cs" />
+    <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinMovementController.cs" />
+    <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinStateInfo.cs" />
     <Compile Include="Assets\_Scripts\HUD\ArrowsPanel.cs" />
     <Compile Include="Assets\_Scripts\HUD\HUD.cs" />
     <Compile Include="Assets\_Scripts\HUD\PlayerStatusPanel.cs" />

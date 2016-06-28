@@ -14,6 +14,8 @@ public class PlayerAnimationController : MonoBehaviour
 
     public GameObject m_bow, m_magic, m_magicSweep, m_drawnArrow, m_drawingArrow;
 
+    public ParticleSystem m_jumpEffect;
+
     public Transform m_leftHandDrawnArrowTransform;
 
     public Vector3 m_magic1AimLine = new Vector3(-.4f, 0.0f, 1.014f), m_magic2AimLine = new Vector3(-.2f, 0.0f, 1.014f), m_magic3AimLine = new Vector3(0.0f, 0.0f, 1.0f);
@@ -31,6 +33,9 @@ public class PlayerAnimationController : MonoBehaviour
     private Rigidbody m_playerRigidBody;
 
     private CapsuleCollider m_playerCollider;
+
+    private ParticleSystem.EmissionModule m_jumpEffectEmission;
+    private ParticleSystem.MinMaxCurve m_jumpEffectEmissionRate;
 
     private Vector3 m_magicAimLine;
 
@@ -71,6 +76,10 @@ public class PlayerAnimationController : MonoBehaviour
         m_magicAimLine = m_magic1AimLine;
 
         m_playerCollider = GetComponent<CapsuleCollider>();
+
+        m_jumpEffectEmission = m_jumpEffect.emission;
+        m_jumpEffectEmissionRate = new ParticleSystem.MinMaxCurve(0.0f);
+        m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
     }
 	
 	// Update is called once per frame
@@ -160,6 +169,7 @@ public class PlayerAnimationController : MonoBehaviour
         m_playerAnimator.SetFloat("Sideways", m_playerState.m_sidewaysAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Turn", m_turn, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Jump", m_playerRigidBody.velocity.y);
+        m_playerAnimator.SetFloat("JumpCharge", m_jumpCharge);
         m_playerAnimator.SetBool("OnGround", m_playerState.m_grounded);
         m_playerAnimator.SetBool("Aiming", m_playerState.m_aiming);
         m_playerAnimator.SetBool("Crouch", m_playerState.m_crouching);
@@ -519,16 +529,6 @@ public class PlayerAnimationController : MonoBehaviour
 
     void PlayerJump()
     {
-        /*
-        if (m_playerState.m_jumping && m_playerState.m_grounded)
-        {
-            m_playerState.m_grounded = false;
-            m_playerState.m_jumping = false;
-            m_playerRigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.VelocityChange);
-            //m_playerRigidBody.velocity = m_playerRigidBody.velocity + new Vector3(0.0f, m_jumpForce * Time.deltaTime, 0.0f);
-        }
-        */
-
         if (m_playerState.m_jumping && !m_jumpLock)
         {
             m_jumpLock = true;
@@ -538,11 +538,16 @@ public class PlayerAnimationController : MonoBehaviour
 
     IEnumerator ChargeJump ()
     {
+        m_jumpEffect.Play();
+
         while(m_playerState.m_jumping)
         {
             m_jumpCharge = Mathf.SmoothStep(m_jumpCharge, 1.0f, m_jumpChargeRate);
 
-            Debug.Log("m_jumpCharge == " + m_jumpCharge.ToString());
+            m_jumpEffectEmissionRate.constantMax = 50.0f * m_jumpCharge;
+            m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
+
+            //Debug.Log("m_jumpCharge == " + m_jumpCharge.ToString());
 
             yield return null;
         }
@@ -551,12 +556,14 @@ public class PlayerAnimationController : MonoBehaviour
         {
             m_playerState.m_grounded = false;
             m_playerState.m_jumping = false;
-            m_playerRigidBody.AddForce(Vector3.up * (m_jumpForce * Mathf.Clamp(m_jumpCharge, 0.2f, 1.0f)), ForceMode.VelocityChange);
-
-            m_jumpCharge = 0.0f;
+            m_playerRigidBody.AddForce(Vector3.up * (m_jumpForce * Mathf.Clamp(m_jumpCharge, 0.2f, 1.0f)), ForceMode.VelocityChange);            
         }
 
-        m_jumpLock = false;
+        m_jumpCharge = 0.0f;
+        m_jumpLock = false;        
+        m_jumpEffectEmissionRate.constantMax = 0.0f;
+        m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
+        m_jumpEffect.Stop();
 
         yield return null;
     }
