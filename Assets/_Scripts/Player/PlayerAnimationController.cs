@@ -27,6 +27,8 @@ public class PlayerAnimationController : MonoBehaviour
     private OrbitCam m_orbitCam;
     private PlayerStateInfo m_playerState;
 
+    private List<GoblinStateInfo> m_sweptGoblins = new List<GoblinStateInfo>();
+
     private Animator m_playerAnimator;
     private Transform m_spineTransform, m_leftShoulderTransform, m_rightShoulderTransform;
 
@@ -340,10 +342,31 @@ public class PlayerAnimationController : MonoBehaviour
 
             RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 6.0f, 0.5f, m_magicSweep.transform.forward, 0.0f, ~LayerMask.GetMask("Player", "Arrows"));
 
+            //Give goblins escape chance
+            if (m_sweptGoblins.Count > 0)
+            {
+                for (int i = 0; i < m_sweptGoblins.Count; i++)
+                {
+                    m_sweptGoblins[i].m_swept = false;
+                }
+            }
+
             for (int i = 0; i < hits.Length; i++)
             {
-                if(hits[i].rigidbody != null && hits[i].transform.tag != "Player")
+                if (hits[i].rigidbody != null && hits[i].transform.tag != "Player")
                 {
+                    //Gobin swept
+                    if (hits[i].transform.tag == "Goblin")
+                    {
+                        GoblinStateInfo thisGoblin = hits[i].transform.GetComponentInParent<GoblinStateInfo>();
+
+                        if (!thisGoblin.m_swept)
+                        {
+                            thisGoblin.m_swept = true;
+                            m_sweptGoblins.Add(thisGoblin);
+                        }
+                    }
+
                     float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);
 
                     //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);                    
@@ -351,6 +374,16 @@ public class PlayerAnimationController : MonoBehaviour
                     hits[i].rigidbody.AddExplosionForce(3000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);                    
                 }
             }
+
+            //Free goblins
+            if (m_sweptGoblins.Count > 0)
+            {
+                for (int i = 0; i < m_sweptGoblins.Count; i++)
+                {
+                    m_sweptGoblins[i].m_swept = false;
+                }
+            }
+            m_sweptGoblins.Clear();
 
             yield return null;
         }

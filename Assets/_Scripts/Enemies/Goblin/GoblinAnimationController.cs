@@ -86,7 +86,7 @@ public class GoblinAnimationController : MonoBehaviour
         {
             Vector3 v = (m_goblinAnimator.deltaPosition * m_MoveSpeedMultiplier) / Time.deltaTime;
             
-            if (!m_goblinState.m_gravLocked)
+            if (!m_goblinState.m_gravLocked && !m_goblinState.m_swept)
             {
                 // we preserve the existing y part of the current velocity.
                 v.y = m_goblinRigidBody.velocity.y;

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FiredGravityArrow : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class FiredGravityArrow : MonoBehaviour
     private Rigidbody m_rigidBody;
 
     private PlayerStateInfo m_trappedPlayerState;
+    private List<GoblinStateInfo> m_trappedGoblins = new List<GoblinStateInfo>();
 
     private bool m_flying = true;
 
@@ -72,6 +74,15 @@ public class FiredGravityArrow : MonoBehaviour
                 {
                     m_trappedPlayerState.m_gravLocked = false;
                 }
+            }
+            
+            //Give goblins escape chance
+            if (m_trappedGoblins.Count > 0)
+            {
+                for (int i = 0; i < m_trappedGoblins.Count; i++)
+                {
+                    m_trappedGoblins[i].m_gravLocked = false;
+                }
             }                        
 
             for (int i = 0; i < hits.Length; i++)
@@ -85,6 +96,19 @@ public class FiredGravityArrow : MonoBehaviour
                     }
                     
                     m_trappedPlayerState.m_gravLocked = true;                                        
+                }
+                //Goblin trapped
+                else if (hits[i].tag == "Goblin")
+                {
+                    //Debug.Log("hit goblin " + hits[i].name);
+
+                    GoblinStateInfo thisGoblin = hits[i].GetComponentInParent<GoblinStateInfo>();
+
+                    if (!thisGoblin.m_gravLocked)
+                    {
+                        thisGoblin.m_gravLocked = true;
+                        m_trappedGoblins.Add(thisGoblin);
+                    }
                 }                
 
                 if (hits[i].attachedRigidbody != null)
@@ -100,6 +124,18 @@ public class FiredGravityArrow : MonoBehaviour
                 {
                     m_trappedPlayerState = null;
                 }
+            }
+            
+            //Check for escaped goblins
+            if (m_trappedGoblins.Count > 0)
+            {
+                for (int i = 0; i < m_trappedGoblins.Count; i++)
+                {
+                    if (!m_trappedGoblins[i].m_gravLocked)
+                    {
+                        m_trappedGoblins.Remove(m_trappedGoblins[i]);
+                    }
+                }
             }            
 
             yield return null;
@@ -112,6 +148,19 @@ public class FiredGravityArrow : MonoBehaviour
             {
                 m_trappedPlayerState.m_gravLocked = false;
                 m_trappedPlayerState = null;
+            }
+        }
+
+        //Free goblins        
+        if (m_trappedGoblins.Count > 0)
+        {
+            for (int i = 0; i < m_trappedGoblins.Count; i++)
+            {
+                if (m_trappedGoblins[i].m_gravLocked)
+                {
+                    m_trappedGoblins[i].m_gravLocked = false;
+                    m_trappedGoblins.Remove(m_trappedGoblins[i]);
+                }
             }
         }
 
