@@ -30,7 +30,7 @@ public class GoblinMovementController : MonoBehaviour
 
     void FixedUpdate ()
     {
-        m_goblinState.m_grounded = CheckGround();
+        m_goblinState.m_grounded = CheckGround() ^ (m_goblinState.m_swept || m_goblinState.m_gravLocked);
     }
 
     public void Move(float v, float h)

@@ -37,7 +37,7 @@ public class PlayerMovementController : MonoBehaviour
 
     void FixedUpdate ()
     {
-        m_playerState.m_grounded = CheckGround();
+        m_playerState.m_grounded = CheckGround() ^ m_playerState.m_gravLocked;
         m_playerState.m_crouching = CheckHead();
     }
 

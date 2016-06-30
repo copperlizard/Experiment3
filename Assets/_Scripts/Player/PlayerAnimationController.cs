@@ -336,57 +336,50 @@ public class PlayerAnimationController : MonoBehaviour
 
         AnimatorStateInfo state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
-        while(state.IsName("MagicAttack2") && state.normalizedTime < 0.6f && m_playerState.m_aiming)
+        while(state.IsName("MagicAttack2") && state.normalizedTime < 0.55f && m_playerState.m_aiming)
         {
             state = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
             RaycastHit[] hits = Physics.CapsuleCastAll(m_magicSweep.transform.position, m_magicSweep.transform.position + m_magicSweep.transform.forward * 6.0f, 0.5f, m_magicSweep.transform.forward, 0.0f, ~LayerMask.GetMask("Player", "Arrows"));
-
-            //Give goblins escape chance
-            if (m_sweptGoblins.Count > 0)
-            {
-                for (int i = 0; i < m_sweptGoblins.Count; i++)
-                {
-                    m_sweptGoblins[i].m_swept = false;
-                }
-            }
-
+            
             for (int i = 0; i < hits.Length; i++)
             {
                 if (hits[i].rigidbody != null && hits[i].transform.tag != "Player")
                 {
                     //Gobin swept
                     if (hits[i].transform.tag == "Goblin")
-                    {
+                    {                        
                         GoblinStateInfo thisGoblin = hits[i].transform.GetComponentInParent<GoblinStateInfo>();
-
+                        
                         if (!thisGoblin.m_swept)
                         {
                             thisGoblin.m_swept = true;
                             m_sweptGoblins.Add(thisGoblin);
                         }
+                        
+                        hits[i].transform.parent.GetComponentInParent<Rigidbody>().AddExplosionForce(6000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);
+
+                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - 0.15f * Time.deltaTime, 0.0f, 1.0f);                   
                     }
-
-                    float distMod = Mathf.Clamp(1.0f - ((hits[i].transform.position - m_magicSweep.transform.position).magnitude / 3.0f), 0.0f, 1.0f);
-
-                    //hits[i].rigidbody.AddForce(m_magicSweep.transform.forward * (20.0f + 20.0f * distMod), ForceMode.Impulse);                    
-
-                    hits[i].rigidbody.AddExplosionForce(3000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);                    
+                    else
+                    {
+                        hits[i].rigidbody.AddExplosionForce(1500.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);
+                    }                 
                 }
-            }
-
-            //Free goblins
-            if (m_sweptGoblins.Count > 0)
-            {
-                for (int i = 0; i < m_sweptGoblins.Count; i++)
-                {
-                    m_sweptGoblins[i].m_swept = false;
-                }
-            }
-            m_sweptGoblins.Clear();
+            }           
 
             yield return null;
         }
+
+        //Free goblins
+        if (m_sweptGoblins.Count > 0)
+        {
+            for (int i = 0; i < m_sweptGoblins.Count; i++)
+            {
+                m_sweptGoblins[i].m_swept = false;
+            }
+        }
+        m_sweptGoblins.Clear();
 
         m_magicSweep.SetActive(false);
 

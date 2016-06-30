@@ -6,7 +6,7 @@ public class FiredGravityArrow : MonoBehaviour
 {
     public GameObject m_gravEffect, m_endGravEffect;
 
-    public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 60000.0f, m_endGravEffectForce = 10000.0f;
+    public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 60000.0f, m_endGravEffectForce = 10000.0f, m_gravDamage = 0.01f;
 
     private Rigidbody m_rigidBody;
 
@@ -95,7 +95,8 @@ public class FiredGravityArrow : MonoBehaviour
                         m_trappedPlayerState = hits[i].GetComponent<PlayerStateInfo>();
                     }
                     
-                    m_trappedPlayerState.m_gravLocked = true;                                        
+                    m_trappedPlayerState.m_gravLocked = true;
+                    m_trappedPlayerState.m_health = Mathf.Clamp(m_trappedPlayerState.m_health - m_gravDamage * Time.deltaTime, 0.0f, 1.0f);                                        
                 }
                 //Goblin trapped
                 else if (hits[i].tag == "Goblin")
@@ -107,6 +108,7 @@ public class FiredGravityArrow : MonoBehaviour
                     if (!thisGoblin.m_gravLocked)
                     {
                         thisGoblin.m_gravLocked = true;
+                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_gravDamage * Time.deltaTime, 0.0f, 1.0f);
                         m_trappedGoblins.Add(thisGoblin);
                     }
                 }                
@@ -129,11 +131,15 @@ public class FiredGravityArrow : MonoBehaviour
             //Check for escaped goblins
             if (m_trappedGoblins.Count > 0)
             {
-                for (int i = 0; i < m_trappedGoblins.Count; i++)
+                for (int i = 0; i < m_trappedGoblins.Count;)
                 {
                     if (!m_trappedGoblins[i].m_gravLocked)
                     {
                         m_trappedGoblins.Remove(m_trappedGoblins[i]);
+                    }
+                    else
+                    {
+                        i++;
                     }
                 }
             }            
