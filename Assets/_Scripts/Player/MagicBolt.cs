@@ -8,7 +8,7 @@ public class MagicBolt : MonoBehaviour
 {
     public GameObject m_bolt, m_burst;
 
-    public float m_maxLife = 3.0f, m_burstTime = 1.0f, m_burstRadius = 0.5f, m_burstForce = 5.0f;
+    public float m_maxLife = 3.0f, m_burstTime = 1.0f, m_burstRadius = 0.5f, m_burstForce = 5.0f, m_boltDamage = 0.2f;
 
     private Rigidbody m_rigidBody;
 
@@ -62,6 +62,12 @@ public class MagicBolt : MonoBehaviour
             if (hits[i].attachedRigidbody != null)
             {
                 hits[i].attachedRigidbody.AddExplosionForce(m_burstForce, transform.position, m_burstRadius, 0.5f, ForceMode.Impulse);
+            }
+
+            if (hits[i].tag == "Goblin")
+            {
+                GoblinStateInfo thisGoblin = hits[i].GetComponentInParent<GoblinStateInfo>();
+                thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_boltDamage * Time.deltaTime, 0.0f, 1.0f);
             }
         }
 

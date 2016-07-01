@@ -7,6 +7,8 @@ public class GoblinAI : MonoBehaviour
 {
     public GameManager m_gameManager;
 
+    public GameObject m_player;
+
     private GoblinStateInfo m_goblinState;
     private GoblinMovementController m_goblinMover;
 
@@ -18,6 +20,11 @@ public class GoblinAI : MonoBehaviour
         if (m_gameManager == null)
         {
             m_gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
+        }
+
+        if (m_player == null)
+        {
+            m_player = GameObject.FindGameObjectWithTag("Player");
         }
 
         m_goblinState = GetComponent<GoblinStateInfo>();
@@ -39,6 +46,16 @@ public class GoblinAI : MonoBehaviour
 
     void Think ()
     {
+        Vector3 toPlayer = m_player.transform.position - transform.position;
 
+        float distToPlayer = toPlayer.magnitude;
+
+        toPlayer = Vector3.ProjectOnPlane(toPlayer, Vector3.up);
+        toPlayer = toPlayer.normalized;
+
+        //Debug.DrawLine(transform.position, transform.position + toPlayer);
+
+        m_v = toPlayer.z;
+        m_h = toPlayer.x;
     }
 }

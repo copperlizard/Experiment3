@@ -37,6 +37,8 @@ public class GoblinMovementController : MonoBehaviour
     {
         Vector3 move = new Vector3(h, 0.0f, v).normalized;
 
+        Debug.DrawLine(transform.position, transform.position + move, Color.yellow);
+
         // Apply move speed modifier
         if (m_goblinState.m_sprinting)
         {
@@ -70,6 +72,10 @@ public class GoblinMovementController : MonoBehaviour
     {
         if (move.magnitude > 0.0f)
         {
+            // Look "forward"
+            Quaternion lookRot = Quaternion.LookRotation(move);
+            m_goblinState.m_turnTarAng = lookRot.eulerAngles.y;
+
             // Account for "hills"
             move = Vector3.ProjectOnPlane(move, m_groundNormal);
         }
@@ -85,6 +91,6 @@ public class GoblinMovementController : MonoBehaviour
 
     private void AirMove (Vector3 move)
     {
-        m_goblinRigidbody.AddForce(move * 100.0f);
+        //m_goblinRigidbody.AddForce(move * 100.0f);
     }
 }

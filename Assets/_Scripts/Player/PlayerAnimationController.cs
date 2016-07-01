@@ -347,22 +347,32 @@ public class PlayerAnimationController : MonoBehaviour
                 if (hits[i].rigidbody != null && hits[i].transform.tag != "Player")
                 {
                     //Gobin swept
-                    if (hits[i].transform.tag == "Goblin")
-                    {                        
-                        GoblinStateInfo thisGoblin = hits[i].transform.GetComponentInParent<GoblinStateInfo>();
-                        
+                    if (hits[i].transform.tag == "Goblin" && LayerMask.LayerToName(hits[i].transform.gameObject.layer) == "PlayerBubble")
+                    {
+                        //Debug.Log("Goblin hit " + hits[i].transform.name);
+                                     
+                        GoblinStateInfo thisGoblin = hits[i].transform.GetComponent<GoblinStateInfo>();
+                        Rigidbody thisRigidbody = hits[i].transform.GetComponent<Rigidbody>();
+
                         if (!thisGoblin.m_swept)
                         {
+                            //Debug.Log("new goblin hit!");
+
                             thisGoblin.m_swept = true;
                             m_sweptGoblins.Add(thisGoblin);
                         }
-                        
-                        hits[i].transform.parent.GetComponentInParent<Rigidbody>().AddExplosionForce(6000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);
 
-                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - 0.15f * Time.deltaTime, 0.0f, 1.0f);                   
+                        if (thisRigidbody != null)
+                        {
+                            thisRigidbody.AddExplosionForce(6000.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 0.8f, ForceMode.Impulse);                            
+                        }                        
+                        
+                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - 1.2f * Time.deltaTime, 0.0f, 1.0f);                   
                     }
                     else
                     {
+                        //Debug.Log("Not Goblin hit " + hits[i].transform.name);
+
                         hits[i].rigidbody.AddExplosionForce(1500.0f * Time.deltaTime, m_magicSweep.transform.position, 6.5f, 1.0f, ForceMode.Impulse);
                     }                 
                 }
