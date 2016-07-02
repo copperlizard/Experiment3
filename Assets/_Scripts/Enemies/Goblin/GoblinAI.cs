@@ -15,7 +15,7 @@ public class GoblinAI : MonoBehaviour
 
     private PlayerStateInfo m_playerStateInfo;
 
-    private Transform m_leftHand, m_rightHand;
+    private Transform m_leftHand, m_rightHand, m_head;
 
     private GoblinStateInfo m_goblinState;
     private GoblinMovementController m_goblinMover;
@@ -25,11 +25,11 @@ public class GoblinAI : MonoBehaviour
     private NavMeshAgent m_goblinNavAgent;
     private NavMeshPath m_goblinPath;
 
-    private float m_v, m_h;
+    private float m_v, m_h, m_lastHealth = 1.0f;
 
     private int m_curPatrolPoint = 0, m_curPathPoint = 0;
 
-    private bool m_goodPath = false;
+    private bool m_goodPath = false, m_playerVisible, m_searching;
 
     // Use this for initialization
     void Start ()
@@ -52,6 +52,7 @@ public class GoblinAI : MonoBehaviour
 
         m_leftHand = m_goblinAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
         m_rightHand = m_goblinAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+        m_head = m_goblinAnimator.GetBoneTransform(HumanBodyBones.Head);
 
         m_goblinNavAgent = GetComponentInChildren<NavMeshAgent>();
         
@@ -100,6 +101,13 @@ public class GoblinAI : MonoBehaviour
 
     void Think ()
     {
+        if (m_goblinState.m_health < m_lastHealth)
+        {
+            m_goblinState.m_alert = true;
+            m_goblinState.m_sprinting = true;
+            m_lastHealth = m_goblinState.m_health;
+        }
+
         //Attacking
         if (m_goblinState.m_alert)
         {
@@ -107,24 +115,39 @@ public class GoblinAI : MonoBehaviour
 
             float distToPlayer = toPlayer.magnitude;
 
+            //Check visibility
+            m_playerVisible = !Physics.Raycast(m_head.transform.position, toPlayer, distToPlayer, ~LayerMask.GetMask("Goblin", "Player", "PlayerBubble")) || (distToPlayer < 4.0f);
+
+            Debug.Log("player visible == " + m_playerVisible.ToString());
+                        
+            if (!m_playerVisible && !m_searching)
+            {
+                Debug.Log("seaching for player!");
+
+                m_searching = true;
+                StartCoroutine(AlertTimer());
+            }
+                
             if (distToPlayer < 2.0f)
             {
-                //Debug.Log("attack range!");
-
                 Melee(distToPlayer);
             }
 
             toPlayer = Vector3.ProjectOnPlane(toPlayer, Vector3.up);
             toPlayer = toPlayer.normalized;
-
-            //Debug.DrawLine(transform.position, transform.position + toPlayer);
-
+            
             m_v = toPlayer.z;
             m_h = toPlayer.x;
         }
         //Patrolling
         else
         {
+            if (!m_goblinState.m_grounded)
+            {
+                //No patrolling in the air
+                return;
+            }
+
             Vector3 toCurPoint = m_patrolPoints[m_curPatrolPoint].position - transform.position;
 
             float distToPoint = toCurPoint.magnitude;
@@ -155,15 +178,25 @@ public class GoblinAI : MonoBehaviour
             //Following Path
             else
             {
-                //Check path
+                //Check if path
                 if (!m_goodPath)
                 {
+                    //Get path
                     m_goodPath = m_goblinNavAgent.CalculatePath(m_patrolPoints[m_curPatrolPoint].position, m_goblinPath);
                     m_curPathPoint = 0;
                 }
                 //Traverse path
                 else
                 {
+                    //Verify Path
+                    bool pathVerified = !m_goblinNavAgent.Raycast(m_goblinPath.corners[m_curPathPoint], out interrupt);
+
+                    if (!pathVerified)
+                    {
+                        m_goodPath = false;
+                        return;
+                    }
+
                     Vector3 toPathPoint = m_goblinPath.corners[m_curPathPoint] - transform.position;
 
                     float distToPathPoint = toPathPoint.magnitude;
@@ -193,6 +226,27 @@ public class GoblinAI : MonoBehaviour
                 }
             }
         }        
+    }
+
+    IEnumerator AlertTimer ()
+    {
+        yield return new WaitForSeconds(Random.Range(3.0f, 10.0f));
+
+        if (!m_playerVisible)
+        {
+            m_goblinState.m_alert = false;
+            m_goblinState.m_sprinting = false;
+
+            Debug.Log("player lost");
+        }
+        else
+        {
+            Debug.Log("player was found");
+        }
+
+        m_searching = false;
+
+        yield return null;
     }
 
     void Melee (float dist)
