@@ -94,9 +94,7 @@ public class GoblinAnimationController : MonoBehaviour
             }
             else
             {
-                // preserve player velocity 
-
-                Debug.Log("swept");
+                // preserve player velocity
             }
         }
     }

@@ -5,7 +5,7 @@ public class FiredAirBurstArrow : MonoBehaviour
 {
     public GameObject m_airBurstEffect;
 
-    public float m_airBurstRange = 5.0f, m_airBurstTime = 3.0f, m_coneFactor = 0.5f, m_airBurstForce = 30000;
+    public float m_airBurstRange = 5.0f, m_airBurstTime = 3.0f, m_coneFactor = 0.5f, m_airBurstForce = 30000, m_airBurstDamage = 0.2f;
 
     private Rigidbody m_rigidBody;
 
@@ -92,6 +92,13 @@ public class FiredAirBurstArrow : MonoBehaviour
                 if (hits[i].rigidbody != null && coneCheck > m_coneFactor)
                 {
                     hits[i].rigidbody.AddExplosionForce(m_airBurstForce * Time.deltaTime, transform.position, m_airBurstRange + 2.0f);   
+
+                    if (hits[i].transform.tag == "Goblin" && LayerMask.LayerToName(hits[i].transform.gameObject.layer) == "PlayerBubble")
+                    {
+                        GoblinStateInfo thisGoblin = hits[i].transform.GetComponent<GoblinStateInfo>();
+
+                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_airBurstDamage * Time.deltaTime, 0.0f, 1.0f);
+                    }
                 }
             }
 

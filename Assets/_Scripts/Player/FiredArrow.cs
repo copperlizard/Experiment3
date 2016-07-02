@@ -4,7 +4,11 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class FiredArrow : MonoBehaviour
 {
+    public float m_headShotDamage = 0.4f, m_bodyShotDamage = 0.2f, m_damageOverTime = 0.01f;
+
     private Rigidbody m_rigidBody;
+
+    private GoblinStateInfo m_hitGoblinState;
 
     private bool m_flying = true;
 
@@ -22,6 +26,13 @@ public class FiredArrow : MonoBehaviour
             if (m_rigidBody.velocity.magnitude > 0.0f)
             {
                 transform.rotation = Quaternion.LookRotation(m_rigidBody.velocity);
+            }
+        }
+        else
+        {
+            if (m_hitGoblinState != null)
+            {
+                m_hitGoblinState.m_health = Mathf.Clamp(m_hitGoblinState.m_health - m_damageOverTime * Time.deltaTime, 0.0f, 1.0f);
             }
         }
         
@@ -50,6 +61,22 @@ public class FiredArrow : MonoBehaviour
         if (other.rigidbody != null)
         {
             transform.parent = other.transform;
+
+            if (other.transform.tag == "Goblin")
+            {
+                m_hitGoblinState = other.transform.GetComponentInParent<GoblinStateInfo>();
+
+                if (other.transform.name == "Head")
+                {
+                    Debug.Log("headshot!");
+
+                    m_hitGoblinState.m_health = Mathf.Clamp(m_hitGoblinState.m_health - m_headShotDamage, 0.0f, 1.0f);
+                }
+                else
+                {
+                    m_hitGoblinState.m_health = Mathf.Clamp(m_hitGoblinState.m_health - m_bodyShotDamage, 0.0f, 1.0f);
+                }
+            }
         }        
     }
 }

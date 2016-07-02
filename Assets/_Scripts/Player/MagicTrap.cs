@@ -65,6 +65,13 @@ public class MagicTrap : MonoBehaviour
 
                     //hits[i].rigidbody.AddForce(transform.up * (20.0f + 20.0f * distMod) * Time.deltaTime, ForceMode.Impulse);
                     hits[i].rigidbody.AddExplosionForce(6000.0f * Time.deltaTime, transform.position, 2.0f, 1.0f, ForceMode.Impulse);
+
+                    if (hits[i].transform.tag == "Goblin" && LayerMask.LayerToName(hits[i].transform.gameObject.layer) == "PlayerBubble")
+                    {
+                        GoblinStateInfo thisGoblin = hits[i].transform.GetComponentInParent<GoblinStateInfo>();
+
+                        thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - 1.0f * Time.deltaTime, 0.0f, 1.0f);
+                    }
                 }
             }
 
