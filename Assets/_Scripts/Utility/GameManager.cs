@@ -1,12 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
     public GameObject m_player, m_pauseMenu;
+
+    public List<GameObject> m_goblins = new List<GameObject>();
     
     [HideInInspector]
     public bool m_paused = false;
+
+    private List<GoblinStateInfo> m_goblinStates = new List<GoblinStateInfo>();
 
     private PlayerStateInfo m_playerState;
 
@@ -21,6 +26,11 @@ public class GameManager : MonoBehaviour
         }
         
         m_playerState = m_player.GetComponent<PlayerStateInfo>();
+
+        for (int i = 0; i < m_goblins.Count; i++)
+        {
+            m_goblinStates.Add(m_goblins[i].GetComponent<GoblinStateInfo>());
+        }
     }
 	
 	// Update is called once per frame
@@ -51,6 +61,18 @@ public class GameManager : MonoBehaviour
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+
+        if (!m_paused)
+        {
+            for (int i = 0; i < m_goblinStates.Count; i++)
+            {
+                if (m_goblinStates[i].m_health <= 0.0f)
+                {
+                    //Goblin died
+                    m_goblinStates[i].gameObject.SetActive(false);
+                }
+            }
         }
     }
 

@@ -22,7 +22,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public float m_jumpForce = 1.0f, m_jumpChargeRate = 0.1f, m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, 
         m_crouchSpeedModifier = 1.0f, m_sprintSpeedModifier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, 
-        m_movingTurnSpeed = 360.0f, m_standingHeight = 2.0f, m_crouchHeight = 1.7f;
+        m_movingTurnSpeed = 360.0f, m_standingHeight = 2.0f, m_crouchHeight = 1.7f, m_bowAimSlerpRate = 0.5f;
 
     private OrbitCam m_orbitCam;
     private PlayerStateInfo m_playerState;
@@ -38,6 +38,8 @@ public class PlayerAnimationController : MonoBehaviour
 
     private ParticleSystem.EmissionModule m_jumpEffectEmission;
     private ParticleSystem.MinMaxCurve m_jumpEffectEmissionRate;
+
+    private Quaternion m_lastBowAimDeltaRot;
 
     private Vector3 m_magicAimLine;
 
@@ -498,7 +500,7 @@ public class PlayerAnimationController : MonoBehaviour
 
             toTar = m_spineTransform.InverseTransformDirection(toTar);
             
-            Quaternion deltaRot = Quaternion.FromToRotation(m_spineTransform.InverseTransformDirection(m_leftHandDrawnArrowTransform.forward), toTar);
+            Quaternion deltaRot = Quaternion.FromToRotation(m_spineTransform.InverseTransformDirection(m_leftHandDrawnArrowTransform.forward), toTar);            
 
             AnimatorStateInfo stateInfo = m_playerAnimator.GetCurrentAnimatorStateInfo(1);
 
@@ -509,7 +511,10 @@ public class PlayerAnimationController : MonoBehaviour
                 deltaRot = Quaternion.FromToRotation(shoulders, toTar) * Quaternion.Euler(0.0f, 3.0f, 11.0f);
             }
 
-            m_spineTransform.localRotation *= deltaRot;
+            m_lastBowAimDeltaRot = Quaternion.Slerp(m_lastBowAimDeltaRot, deltaRot, m_bowAimSlerpRate);
+
+            //m_spineTransform.localRotation *= deltaRot;
+            m_spineTransform.localRotation *= m_lastBowAimDeltaRot;
 
             m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
         }

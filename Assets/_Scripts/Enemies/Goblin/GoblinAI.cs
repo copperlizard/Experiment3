@@ -11,7 +11,7 @@ public class GoblinAI : MonoBehaviour
 
     public GameObject m_player;
 
-    public List<Transform> m_patrolPoints = new List<Transform>();
+    private List<Transform> m_patrolPoints = new List<Transform>();
 
     private PlayerStateInfo m_playerStateInfo;
 
@@ -29,7 +29,7 @@ public class GoblinAI : MonoBehaviour
 
     private int m_curPatrolPoint = 0, m_curPathPoint = 0;
 
-    private bool m_goodPath = false, m_playerVisible, m_searching;
+    private bool m_goodPath = false, m_playerVisible, m_searching, m_pathPausing = false;
 
     // Use this for initialization
     void Start ()
@@ -57,6 +57,17 @@ public class GoblinAI : MonoBehaviour
         m_goblinNavAgent = GetComponentInChildren<NavMeshAgent>();
         
         m_goblinPath = new NavMeshPath();
+
+        GameObject[] patrolPointsObjs = GameObject.FindGameObjectsWithTag("GoblinPatrolPoint");
+
+        for (int i = 0; i < patrolPointsObjs.Length; i++)
+        {
+            m_patrolPoints.Add(patrolPointsObjs[i].transform);
+        }
+
+        Random.seed = GetHashCode();
+                
+        m_curPatrolPoint = Random.Range(0, m_patrolPoints.Count);
     }
 	
 	// Update is called once per frame
@@ -74,6 +85,8 @@ public class GoblinAI : MonoBehaviour
         m_goblinMover.Move(m_v, m_h);
 
 #if UNITY_EDITOR
+
+        /*
         for (int i = 0; i < m_patrolPoints.Count - 1; i++)
         {
             Debug.DrawLine(m_patrolPoints[i].position, m_patrolPoints[i + 1].position);
@@ -82,6 +95,7 @@ public class GoblinAI : MonoBehaviour
                 Debug.DrawLine(m_patrolPoints[0].position, m_patrolPoints[i + 1].position);
             }
         }
+        */
 
         if (m_goodPath)
         {
@@ -101,6 +115,8 @@ public class GoblinAI : MonoBehaviour
 
     void Think ()
     {
+        Debug.Log(gameObject.name + " thinking!");
+
         if (m_goblinState.m_health < m_lastHealth)
         {
             m_goblinState.m_alert = true;
@@ -142,11 +158,15 @@ public class GoblinAI : MonoBehaviour
         //Patrolling
         else
         {
-            if (!m_goblinState.m_grounded)
+            if (!m_goblinState.m_grounded || m_pathPausing)
             {
+                Debug.Log(gameObject.name + " patrol paused!");
+
                 //No patrolling in the air
                 return;
             }
+
+            Debug.Log(gameObject.name + " is patrolling!");
 
             Vector3 toCurPoint = m_patrolPoints[m_curPatrolPoint].position - transform.position;
 
@@ -156,9 +176,18 @@ public class GoblinAI : MonoBehaviour
             if (distToPoint < 0.5f)
             {
                 //Randomly choose new patrol point
-                m_curPatrolPoint = Random.Range(0, m_patrolPoints.Count);
+                int lastPoint = m_curPatrolPoint;
+                while (m_curPatrolPoint == lastPoint)
+                {
+                    m_curPatrolPoint = Random.Range(0, m_patrolPoints.Count);
+                }
+
+                StartCoroutine(PatrolPause());
+
                 return;
             }
+
+            Debug.Log(gameObject.name + " patrolling to " + m_patrolPoints[m_curPatrolPoint].name);
 
             NavMeshHit interrupt;
 
@@ -245,6 +274,20 @@ public class GoblinAI : MonoBehaviour
         }
 
         m_searching = false;
+
+        yield return null;
+    }
+
+    IEnumerator PatrolPause ()
+    {
+        m_pathPausing = true;
+
+        m_v = 0.0f;
+        m_h = 0.0f;
+
+        yield return new WaitForSeconds(Random.Range(0.0f, 5.0f));
+
+        m_pathPausing = false;
 
         yield return null;
     }
