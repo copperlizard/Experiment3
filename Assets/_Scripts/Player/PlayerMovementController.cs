@@ -95,12 +95,17 @@ public class PlayerMovementController : MonoBehaviour
             Debug.DrawLine(startPos, startPos + Vector3.up * m_headCheckDist, Color.green);
 #endif            
 
-            if (Physics.Raycast(startPos, Vector3.up, m_headCheckDist, ~LayerMask.GetMask("Player", "Ignore Raycast")))
+            RaycastHit hit;
+
+            if (Physics.Raycast(startPos, Vector3.up, out hit, m_headCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast", "Enemy")))
             {                
                 m_playerState.m_sprinting = false;
                 m_playerState.m_jumping = false;
 
                 //Hit head
+
+                Debug.Log("hit head on " + hit.transform.name);
+
                 return true;
             }
 

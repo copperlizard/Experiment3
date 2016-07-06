@@ -11,6 +11,8 @@ public class GoblinAI : MonoBehaviour
 
     public GameObject m_player;
 
+    public float m_goblinSightDetectionRange = 4.0f;
+
     private List<Transform> m_patrolPoints = new List<Transform>();
 
     private PlayerStateInfo m_playerStateInfo;
@@ -115,7 +117,7 @@ public class GoblinAI : MonoBehaviour
 
     void Think ()
     {
-        Debug.Log(gameObject.name + " thinking!");
+        //Debug.Log(gameObject.name + " thinking!");
 
         if (m_goblinState.m_health < m_lastHealth)
         {
@@ -124,17 +126,25 @@ public class GoblinAI : MonoBehaviour
             m_lastHealth = m_goblinState.m_health;
         }
 
+        Vector3 toPlayer = m_player.transform.position - transform.position;
+
+        float distToPlayer = toPlayer.magnitude;
+
+        //Check visibility
+        m_playerVisible = !Physics.Raycast(m_head.transform.position, toPlayer, distToPlayer, ~LayerMask.GetMask("Goblin", "Player", "PlayerBubble")) && (distToPlayer < m_goblinSightDetectionRange);
+
+        if (m_playerVisible)
+        {
+            Debug.Log("Player Spotted!");
+
+            m_goblinState.m_alert = true;
+            m_goblinState.m_sprinting = true;
+        }
+
         //Attacking
         if (m_goblinState.m_alert)
         {
-            Vector3 toPlayer = m_player.transform.position - transform.position;
-
-            float distToPlayer = toPlayer.magnitude;
-
-            //Check visibility
-            m_playerVisible = !Physics.Raycast(m_head.transform.position, toPlayer, distToPlayer, ~LayerMask.GetMask("Goblin", "Player", "PlayerBubble")) || (distToPlayer < 4.0f);
-
-            Debug.Log("player visible == " + m_playerVisible.ToString());
+            //Debug.Log("player visible == " + m_playerVisible.ToString());
                         
             if (!m_playerVisible && !m_searching)
             {
@@ -160,13 +170,13 @@ public class GoblinAI : MonoBehaviour
         {
             if (!m_goblinState.m_grounded || m_pathPausing)
             {
-                Debug.Log(gameObject.name + " patrol paused!");
+                //Debug.Log(gameObject.name + " patrol paused!");
 
                 //No patrolling in the air
                 return;
             }
 
-            Debug.Log(gameObject.name + " is patrolling!");
+            //Debug.Log(gameObject.name + " is patrolling!");
 
             Vector3 toCurPoint = m_patrolPoints[m_curPatrolPoint].position - transform.position;
 
@@ -184,10 +194,10 @@ public class GoblinAI : MonoBehaviour
 
                 StartCoroutine(PatrolPause());
 
+                //Debug.Log(gameObject.name + " patrolling to " + m_patrolPoints[m_curPatrolPoint].name);
+
                 return;
             }
-
-            Debug.Log(gameObject.name + " patrolling to " + m_patrolPoints[m_curPatrolPoint].name);
 
             NavMeshHit interrupt;
 
