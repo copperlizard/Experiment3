@@ -86,6 +86,7 @@
     <Compile Include="Assets\_Scripts\Player\PlayerStateInfo.cs" />
     <Compile Include="Assets\_Scripts\Utility\GameManager.cs" />
     <Compile Include="Assets\_Scripts\Utility\ObjectPool.cs" />
+    <Compile Include="Assets\_Scripts\Utility\TerrainManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />

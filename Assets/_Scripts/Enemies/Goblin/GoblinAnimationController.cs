@@ -12,6 +12,8 @@ public class GoblinAnimationController : MonoBehaviour
     private Animator m_goblinAnimator;
     private Rigidbody m_goblinRigidBody;
 
+    //private Vector3 m_lastV;
+
     private float m_turn;
 
 	// Use this for initialization
@@ -88,9 +90,15 @@ public class GoblinAnimationController : MonoBehaviour
             
             if (!m_goblinState.m_gravLocked && !m_goblinState.m_swept)
             {
+                //m_goblinRigidBody.velocity -= m_lastV;
+
                 // we preserve the existing y part of the current velocity.
                 v.y = m_goblinRigidBody.velocity.y;
                 m_goblinRigidBody.velocity = v;
+
+                //m_lastV = v;
+
+                //m_goblinRigidBody.velocity += m_lastV;
             }
             else
             {

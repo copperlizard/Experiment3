@@ -47,7 +47,9 @@ public class FiredArrow : MonoBehaviour
         m_rigidBody.isKinematic = false;
 
         transform.parent = null;
-    }
+
+        m_hitGoblinState = null;
+    }   
 
     private void OnCollisionEnter (Collision other)
     {        

@@ -39,6 +39,9 @@ public class PlayerAnimationController : MonoBehaviour
     private ParticleSystem.EmissionModule m_jumpEffectEmission;
     private ParticleSystem.MinMaxCurve m_jumpEffectEmissionRate;
 
+    private AudioSource m_footStepsSoundEffectSource;
+    private AudioSource m_jumpSoundEffectSource;
+
     private Quaternion m_lastBowAimDeltaRot;
 
     private Vector3 m_magicAimLine;
@@ -84,6 +87,10 @@ public class PlayerAnimationController : MonoBehaviour
         m_jumpEffectEmission = m_jumpEffect.emission;
         m_jumpEffectEmissionRate = new ParticleSystem.MinMaxCurve(0.0f);
         m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
+
+        m_jumpSoundEffectSource = m_jumpEffect.GetComponentInParent<AudioSource>();
+
+        m_footStepsSoundEffectSource = GetComponent<AudioSource>();
     }
 	
 	// Update is called once per frame
@@ -189,6 +196,12 @@ public class PlayerAnimationController : MonoBehaviour
         if (m_playerState.m_grounded)
         {
             m_playerAnimator.SetFloat("JumpLeg", jumpLeg);
+        }
+        
+        if ((runCycle <= 0.05f || (runCycle >= 0.475f && runCycle <= 0.525f)) && !m_footStepsSoundEffectSource.isPlaying && m_playerState.m_grounded)
+        {
+            m_footStepsSoundEffectSource.pitch = Random.Range(0.9f, 1.1f);
+            m_footStepsSoundEffectSource.PlayOneShot(m_footStepsSoundEffectSource.clip, Mathf.Lerp(0.0f, 1.0f, m_playerRigidBody.velocity.magnitude));
         }
 
         // the anim speed multiplier allows the overall speed of walking/running to be tweaked in the inspector,
@@ -584,6 +597,7 @@ public class PlayerAnimationController : MonoBehaviour
         while(m_playerState.m_jumping)
         {
             m_jumpCharge = Mathf.SmoothStep(m_jumpCharge, 1.0f, m_jumpChargeRate);
+            m_jumpSoundEffectSource.pitch = m_jumpCharge;
 
             m_jumpEffectEmissionRate.constantMax = 50.0f * m_jumpCharge;
             m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
@@ -601,6 +615,7 @@ public class PlayerAnimationController : MonoBehaviour
         }
 
         m_jumpCharge = 0.0f;
+        m_jumpSoundEffectSource.pitch = m_jumpCharge;
         m_jumpLock = false;        
         m_jumpEffectEmissionRate.constantMax = 0.0f;
         m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;

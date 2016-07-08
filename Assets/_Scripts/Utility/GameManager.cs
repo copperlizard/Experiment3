@@ -110,6 +110,14 @@ public class GameManager : MonoBehaviour
 
         //BodyPose goblinBodyPose = GetBodyPose(goblinAnimator);
 
+        FiredArrow[] arrows = goblin.GetComponentsInChildren<FiredArrow>();
+
+        for (int i = 0; i < arrows.Length; i++)
+        {
+            arrows[i].gameObject.transform.SetParent(null);
+            arrows[i].gameObject.SetActive(false);
+        }
+
         goblin.SetActive(false);
 
         GameObject deadBody = m_goblinBodies.GetObject();

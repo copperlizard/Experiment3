@@ -135,7 +135,7 @@ public class GoblinAI : MonoBehaviour
 
         if (m_playerVisible)
         {
-            Debug.Log("Player Spotted!");
+            //Debug.Log("Player Spotted!");
 
             m_goblinState.m_alert = true;
             m_goblinState.m_sprinting = true;
@@ -148,7 +148,7 @@ public class GoblinAI : MonoBehaviour
                         
             if (!m_playerVisible && !m_searching)
             {
-                Debug.Log("seaching for player!");
+                //Debug.Log("seaching for player!");
 
                 m_searching = true;
                 StartCoroutine(AlertTimer());

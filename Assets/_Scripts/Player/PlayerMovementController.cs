@@ -6,16 +6,28 @@ public class PlayerMovementController : MonoBehaviour
 {
     public GameObject m_cam;
 
+    public TerrainManager m_terrainManager;
+
     public float m_groundCheckDist = 0.1f, m_headCheckDist = 1.7f, m_headCheckGroundOffset = 0.1f;
 
+    [System.Serializable]
+    public struct SFX
+    {
+        public AudioSource m_footSoundEffectsSource;
+        public AudioClip m_miscSurface, m_grassSurface, m_mudSurface, m_rockSurface;
+    }
+    public SFX m_footSoundEffects;
+
     private PlayerStateInfo m_playerState;
+
+    private RaycastHit m_groundHit;
 
     private Rigidbody m_playerRigidbody;
 
     private Vector3 m_groundNormal;
 
     private float m_sprintInputModifier = 2.0f;
-
+    
 	// Use this for initialization
 	void Start ()
     {
@@ -27,7 +39,17 @@ public class PlayerMovementController : MonoBehaviour
         m_playerState = GetComponent<PlayerStateInfo>();
 
         m_playerRigidbody = GetComponent<Rigidbody>();
-	}
+
+        if (m_terrainManager == null)
+        {
+            m_terrainManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<TerrainManager>();
+        }
+
+        if (m_footSoundEffects.m_footSoundEffectsSource == null)
+        {
+            m_footSoundEffects.m_footSoundEffectsSource = GetComponent<AudioSource>();
+        }
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -38,6 +60,35 @@ public class PlayerMovementController : MonoBehaviour
     void FixedUpdate ()
     {
         m_playerState.m_grounded = CheckGround() ^ m_playerState.m_gravLocked;
+
+        if (m_playerState.m_grounded)
+        {
+            if (m_groundHit.collider.gameObject.name == "Terrain")
+            {
+                int surface = m_terrainManager.GetActiveTerrainTextureId(m_groundHit.point);
+
+                switch (surface)
+                {
+                    case 0:
+                        m_footSoundEffects.m_footSoundEffectsSource.clip = m_footSoundEffects.m_mudSurface;
+                        break;
+                    case 1:
+                        m_footSoundEffects.m_footSoundEffectsSource.clip = m_footSoundEffects.m_rockSurface;
+                        break;
+                    case 3:
+                        m_footSoundEffects.m_footSoundEffectsSource.clip = m_footSoundEffects.m_grassSurface;
+                        break;
+                    default:
+                        m_footSoundEffects.m_footSoundEffectsSource.clip = m_footSoundEffects.m_miscSurface;
+                        break;
+                }
+            }   
+            else
+            {
+                m_footSoundEffects.m_footSoundEffectsSource.clip = m_footSoundEffects.m_miscSurface;
+            }         
+        }
+
         m_playerState.m_crouching = CheckHead();
     }
 
@@ -73,11 +124,10 @@ public class PlayerMovementController : MonoBehaviour
         Debug.DrawLine(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), (transform.position + (Vector3.up * m_groundCheckDist * 0.5f)) + Vector3.down * m_groundCheckDist);
 #endif
         */
-
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out hit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble")))
+       
+        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out m_groundHit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble")))
         {
-            m_groundNormal = hit.normal;
+            m_groundNormal = m_groundHit.normal;
             return true;
         }
 
@@ -94,17 +144,15 @@ public class PlayerMovementController : MonoBehaviour
 #if UNITY_EDITOR
             Debug.DrawLine(startPos, startPos + Vector3.up * m_headCheckDist, Color.green);
 #endif            
-
-            RaycastHit hit;
-
-            if (Physics.Raycast(startPos, Vector3.up, out hit, m_headCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast", "Enemy")))
+            
+            if (Physics.Raycast(startPos, Vector3.up, out m_groundHit, m_headCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast", "Enemy")))
             {                
                 m_playerState.m_sprinting = false;
                 m_playerState.m_jumping = false;
 
                 //Hit head
 
-                Debug.Log("hit head on " + hit.transform.name);
+                Debug.Log("hit head on " + m_groundHit.transform.name);
 
                 return true;
             }
