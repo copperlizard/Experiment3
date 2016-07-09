@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlayerStateInfo))]
+[RequireComponent(typeof(AudioSource))]
 public class PlayerAnimationController : MonoBehaviour
 {
     public Camera m_cam;

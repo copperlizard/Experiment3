@@ -2,7 +2,10 @@
 using System.Collections;
 
 public class GoblinStateInfo : MonoBehaviour
-{ 
+{
+    [HideInInspector]
+    public Vector3 m_playerLastSeenPos;
+
     [HideInInspector]
     public float m_forwardAmount, m_sidewaysAmount, m_turnTarAng, m_health = 1.0f;
         

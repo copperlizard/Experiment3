@@ -5,11 +5,21 @@ using System.Collections.Generic;
 [RequireComponent(typeof(GoblinStateInfo))]
 [RequireComponent(typeof(GoblinMovementController))]
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(AudioSource))]
 public class GoblinAI : MonoBehaviour
 {
     public GameManager m_gameManager;
 
     public GameObject m_player;
+
+    [System.Serializable]
+    public struct SFX
+    {
+        [HideInInspector]
+        public AudioSource m_goblinSFXSource;
+        public AudioClip m_attackNoise, m_painNoise, m_idleNoise;
+    }
+    public SFX m_goblinSFX;
 
     public float m_goblinSightDetectionRange = 4.0f;
 
@@ -23,7 +33,7 @@ public class GoblinAI : MonoBehaviour
     private GoblinMovementController m_goblinMover;
     private Animator m_goblinAnimator;
     private AnimatorStateInfo m_goblinAnimatorState;
-
+    
     private NavMeshAgent m_goblinNavAgent;
     private NavMeshPath m_goblinPath;
 
@@ -31,7 +41,7 @@ public class GoblinAI : MonoBehaviour
 
     private int m_curPatrolPoint = 0, m_curPathPoint = 0;
 
-    private bool m_goodPath = false, m_playerVisible, m_searching, m_pathPausing = false;
+    private bool m_goodPath = false, m_playerVisible, m_searching, m_pathPausing = false, m_painSoundLock = false;
 
     // Use this for initialization
     void Start ()
@@ -69,7 +79,9 @@ public class GoblinAI : MonoBehaviour
 
         Random.seed = GetHashCode();
                 
-        m_curPatrolPoint = Random.Range(0, m_patrolPoints.Count);
+        m_curPatrolPoint = Random.Range(0, m_patrolPoints.Count);       
+
+        m_goblinSFX.m_goblinSFXSource = GetComponent<AudioSource>();
     }
 	
 	// Update is called once per frame
@@ -86,9 +98,10 @@ public class GoblinAI : MonoBehaviour
 
         m_goblinMover.Move(m_v, m_h);
 
+        /*
 #if UNITY_EDITOR
 
-        /*
+        
         for (int i = 0; i < m_patrolPoints.Count - 1; i++)
         {
             Debug.DrawLine(m_patrolPoints[i].position, m_patrolPoints[i + 1].position);
@@ -97,7 +110,7 @@ public class GoblinAI : MonoBehaviour
                 Debug.DrawLine(m_patrolPoints[0].position, m_patrolPoints[i + 1].position);
             }
         }
-        */
+        
 
         if (m_goodPath)
         {
@@ -107,6 +120,7 @@ public class GoblinAI : MonoBehaviour
             }
         }
 #endif
+        */
     }
 
     void FixedUpdate ()
@@ -117,28 +131,42 @@ public class GoblinAI : MonoBehaviour
 
     void Think ()
     {
-        //Debug.Log(gameObject.name + " thinking!");
-
         if (m_goblinState.m_health < m_lastHealth)
         {
             m_goblinState.m_alert = true;
             m_goblinState.m_sprinting = true;
             m_lastHealth = m_goblinState.m_health;
+
+            if (!m_painSoundLock)
+            {
+                StartCoroutine(Grunt());
+            }
         }
 
+        //Debug.Log(gameObject.name + " thinking!");
         Vector3 toPlayer = m_player.transform.position - transform.position;
 
         float distToPlayer = toPlayer.magnitude;
-
+        
         //Check visibility
         m_playerVisible = !Physics.Raycast(m_head.transform.position, toPlayer, distToPlayer, ~LayerMask.GetMask("Goblin", "Player", "PlayerBubble")) && (distToPlayer < m_goblinSightDetectionRange);
-
         if (m_playerVisible)
         {
-            //Debug.Log("Player Spotted!");
-
             m_goblinState.m_alert = true;
             m_goblinState.m_sprinting = true;
+
+            m_goblinState.m_playerLastSeenPos = m_player.transform.position;
+        }
+        else
+        {
+            //modify path to player
+            toPlayer = m_goblinState.m_playerLastSeenPos - transform.position;
+            
+            if (toPlayer.magnitude <= 2.0f && !m_playerVisible)
+            {
+                m_goblinState.m_alert = false;
+                m_goblinState.m_sprinting = false;
+            }
         }
 
         //Attacking
@@ -267,6 +295,34 @@ public class GoblinAI : MonoBehaviour
         }        
     }
 
+    IEnumerator Grunt ()
+    {
+        m_painSoundLock = true;
+        m_goblinSFX.m_goblinSFXSource.pitch = Random.Range(0.9f, 1.1f);        
+        m_goblinSFX.m_goblinSFXSource.PlayOneShot(m_goblinSFX.m_painNoise, (m_goblinState.m_alert) ? 1.0f : 0.5f);        
+        
+        Collider[] hits = Physics.OverlapSphere(transform.position, 10.0f);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].tag == "Goblin")
+            {
+                GoblinStateInfo thisGoblin = hits[i].GetComponent<GoblinStateInfo>();
+
+                if (thisGoblin != null)
+                {
+                    thisGoblin.m_alert = true;
+                    thisGoblin.m_sprinting = true;
+                    thisGoblin.m_playerLastSeenPos = m_goblinState.m_playerLastSeenPos;
+                }
+            }
+        }
+        
+        yield return new WaitForSeconds(Random.Range(2.0f, 4.0f));
+        m_painSoundLock = false;
+        yield return null;
+    }
+
     IEnumerator AlertTimer ()
     {
         yield return new WaitForSeconds(Random.Range(3.0f, 10.0f));
@@ -276,11 +332,11 @@ public class GoblinAI : MonoBehaviour
             m_goblinState.m_alert = false;
             m_goblinState.m_sprinting = false;
 
-            Debug.Log("player lost");
+            //Debug.Log("player lost");
         }
         else
         {
-            Debug.Log("player was found");
+            //Debug.Log("player was found");
         }
 
         m_searching = false;
@@ -291,6 +347,8 @@ public class GoblinAI : MonoBehaviour
     IEnumerator PatrolPause ()
     {
         m_pathPausing = true;
+
+        m_goblinSFX.m_goblinSFXSource.PlayOneShot(m_goblinSFX.m_idleNoise);
 
         m_v = 0.0f;
         m_h = 0.0f;
@@ -308,6 +366,9 @@ public class GoblinAI : MonoBehaviour
         {
             return;
         }
+
+        m_goblinSFX.m_goblinSFXSource.pitch = Random.Range(0.8f, 1.1f);
+        m_goblinSFX.m_goblinSFXSource.PlayOneShot(m_goblinSFX.m_attackNoise);
 
         if (dist > 1.5f)
         {

@@ -4,6 +4,8 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class FiredArrow : MonoBehaviour
 {
+    public GameObject m_player;
+
     public float m_headShotDamage = 0.4f, m_bodyShotDamage = 0.2f, m_damageOverTime = 0.01f;
 
     private Rigidbody m_rigidBody;
@@ -16,6 +18,11 @@ public class FiredArrow : MonoBehaviour
 	void Awake ()
     {
         m_rigidBody = GetComponent<Rigidbody>();	
+
+        if (m_player == null)
+        {
+            m_player = GameObject.FindGameObjectWithTag("Player");
+        }
 	}
 	
 	// Update is called once per frame
@@ -78,6 +85,8 @@ public class FiredArrow : MonoBehaviour
                 {
                     m_hitGoblinState.m_health = Mathf.Clamp(m_hitGoblinState.m_health - m_bodyShotDamage, 0.0f, 1.0f);
                 }
+
+                m_hitGoblinState.m_playerLastSeenPos = m_player.transform.position;
             }
         }        
     }

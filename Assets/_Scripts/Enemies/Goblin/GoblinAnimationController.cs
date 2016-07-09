@@ -4,6 +4,7 @@ using System.Collections;
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(GoblinStateInfo))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(AudioSource))]
 public class GoblinAnimationController : MonoBehaviour
 {
     public float m_animSpeedMultiplier = 1.0f, m_MoveSpeedMultiplier = 1.0f, m_runCycleLegOffset = 0.2f, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f;
@@ -11,6 +12,7 @@ public class GoblinAnimationController : MonoBehaviour
     private GoblinStateInfo m_goblinState;
     private Animator m_goblinAnimator;
     private Rigidbody m_goblinRigidBody;
+    private AudioSource m_footStepsSoundEffectSource;
 
     //private Vector3 m_lastV;
 
@@ -24,7 +26,9 @@ public class GoblinAnimationController : MonoBehaviour
         m_goblinAnimator = GetComponent<Animator>();
 
         m_goblinRigidBody = GetComponent<Rigidbody>();
-	}
+
+        m_footStepsSoundEffectSource = GetComponent<AudioSource>();
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -67,6 +71,12 @@ public class GoblinAnimationController : MonoBehaviour
         if (m_goblinState.m_grounded)
         {
             m_goblinAnimator.SetFloat("JumpLeg", jumpLeg);
+        }
+
+        if ((runCycle <= 0.05f || (runCycle >= 0.475f && runCycle <= 0.525f)) && !m_footStepsSoundEffectSource.isPlaying && m_goblinState.m_grounded)
+        {
+            m_footStepsSoundEffectSource.pitch = Random.Range(0.9f, 1.1f);
+            m_footStepsSoundEffectSource.PlayOneShot(m_footStepsSoundEffectSource.clip, Mathf.Lerp(0.0f, 1.0f, m_goblinRigidBody.velocity.magnitude));
         }
 
         // the anim speed multiplier allows the overall speed of walking/running to be tweaked in the inspector,

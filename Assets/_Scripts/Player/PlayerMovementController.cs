@@ -2,6 +2,7 @@
 using System.Collections;
 
 [RequireComponent(typeof(PlayerStateInfo))]
+[RequireComponent(typeof(AudioSource))]
 public class PlayerMovementController : MonoBehaviour
 {
     public GameObject m_cam;
@@ -13,6 +14,7 @@ public class PlayerMovementController : MonoBehaviour
     [System.Serializable]
     public struct SFX
     {
+        [HideInInspector]
         public AudioSource m_footSoundEffectsSource;
         public AudioClip m_miscSurface, m_grassSurface, m_mudSurface, m_rockSurface;
     }
@@ -44,11 +46,8 @@ public class PlayerMovementController : MonoBehaviour
         {
             m_terrainManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<TerrainManager>();
         }
-
-        if (m_footSoundEffects.m_footSoundEffectsSource == null)
-        {
-            m_footSoundEffects.m_footSoundEffectsSource = GetComponent<AudioSource>();
-        }
+        
+        m_footSoundEffects.m_footSoundEffectsSource = GetComponent<AudioSource>();        
     }
 	
 	// Update is called once per frame
@@ -90,6 +89,8 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         m_playerState.m_crouching = CheckHead();
+
+        AudioAlertEnemies();
     }
 
     public void Move (float v, float h)
@@ -164,6 +165,25 @@ public class PlayerMovementController : MonoBehaviour
         {
             //Player crouching
             return true;
+        }
+    }
+
+    private void AudioAlertEnemies ()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_playerRigidbody.velocity.magnitude * 1.5f);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].tag == "Goblin")
+            {
+                GoblinStateInfo thisGoblin = hits[i].GetComponent<GoblinStateInfo>();
+
+                if (thisGoblin != null)
+                {
+                    thisGoblin.m_alert = true;
+                    thisGoblin.m_sprinting = true;
+                }
+            }
         }
     }
 
