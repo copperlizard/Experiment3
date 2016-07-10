@@ -6,11 +6,13 @@ using System.Collections;
 [RequireComponent(typeof(Collider))]
 public class MagicBolt : MonoBehaviour
 {
-    public GameObject m_bolt, m_burst;
+    public GameObject m_bolt, m_burst, m_player;
 
     public float m_maxLife = 3.0f, m_burstTime = 1.0f, m_burstRadius = 0.5f, m_burstForce = 5.0f, m_boltDamage = 0.2f;
 
     private Rigidbody m_rigidBody;
+
+    private Vector3 m_firedFromPos;
 
     private bool m_detonated = false;
 
@@ -18,6 +20,11 @@ public class MagicBolt : MonoBehaviour
 	void Awake ()
     {
         m_rigidBody = GetComponent<Rigidbody>();
+
+        if (m_player == null)
+        {
+            m_player = GameObject.FindGameObjectWithTag("Player");
+        }
 	}
 	
 	// Update is called once per frame
@@ -33,6 +40,8 @@ public class MagicBolt : MonoBehaviour
         m_detonated = false;
         m_bolt.SetActive(true);
         StartCoroutine(detonateTimer(m_maxLife));
+
+        m_firedFromPos = m_player.transform.position;
     }
 
     void OnCollisionEnter (Collision other)
@@ -68,6 +77,7 @@ public class MagicBolt : MonoBehaviour
             {
                 GoblinStateInfo thisGoblin = hits[i].GetComponentInParent<GoblinStateInfo>();
                 thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_boltDamage * Time.deltaTime, 0.0f, 1.0f);
+                thisGoblin.m_playerLastSeenPos = m_firedFromPos;
             }
         }
 

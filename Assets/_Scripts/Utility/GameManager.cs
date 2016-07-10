@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -99,6 +100,15 @@ public class GameManager : MonoBehaviour
         if (Application.isPlaying)
         {
             Application.Quit();
+        }
+    }
+
+    public void GameReset ()
+    {
+        if (Application.isPlaying)
+        {
+            SceneManager.LoadScene(0);
+            PauseButton();
         }
     }
 

@@ -162,7 +162,7 @@ public class GoblinAI : MonoBehaviour
             //modify path to player
             toPlayer = m_goblinState.m_playerLastSeenPos - transform.position;
             
-            if (toPlayer.magnitude <= 4.0f && !m_playerVisible)
+            if (toPlayer.magnitude <= 5.0f && !m_playerVisible)
             {
                 m_goblinState.m_alert = false;
                 m_goblinState.m_sprinting = false;
