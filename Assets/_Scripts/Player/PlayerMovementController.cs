@@ -170,7 +170,7 @@ public class PlayerMovementController : MonoBehaviour
 
     private void AudioAlertEnemies ()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_playerRigidbody.velocity.magnitude * 1.5f);
+        Collider[] hits = Physics.OverlapSphere(transform.position, Mathf.Clamp(m_playerRigidbody.velocity.magnitude * 1.5f, 0.0f, 20.0f));
 
         for (int i = 0; i < hits.Length; i++)
         {
@@ -182,6 +182,7 @@ public class PlayerMovementController : MonoBehaviour
                 {
                     thisGoblin.m_alert = true;
                     thisGoblin.m_sprinting = true;
+                    thisGoblin.m_playerLastSeenPos = transform.position;
                 }
             }
         }

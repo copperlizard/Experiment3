@@ -71,6 +71,8 @@ public class MagicTrap : MonoBehaviour
                         GoblinStateInfo thisGoblin = hits[i].transform.GetComponentInParent<GoblinStateInfo>();
 
                         thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - 1.0f * Time.deltaTime, 0.0f, 1.0f);
+
+                        thisGoblin.m_playerLastSeenPos = transform.position;
                     }
                 }
             }

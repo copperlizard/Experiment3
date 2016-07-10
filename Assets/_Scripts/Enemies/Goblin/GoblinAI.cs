@@ -162,7 +162,7 @@ public class GoblinAI : MonoBehaviour
             //modify path to player
             toPlayer = m_goblinState.m_playerLastSeenPos - transform.position;
             
-            if (toPlayer.magnitude <= 2.0f && !m_playerVisible)
+            if (toPlayer.magnitude <= 4.0f && !m_playerVisible)
             {
                 m_goblinState.m_alert = false;
                 m_goblinState.m_sprinting = false;
@@ -325,7 +325,7 @@ public class GoblinAI : MonoBehaviour
 
     IEnumerator AlertTimer ()
     {
-        yield return new WaitForSeconds(Random.Range(3.0f, 10.0f));
+        yield return new WaitForSeconds(Random.Range(30.0f, 45.0f));
 
         if (!m_playerVisible)
         {

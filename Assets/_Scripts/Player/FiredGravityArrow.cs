@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class FiredGravityArrow : MonoBehaviour
 {
-    public GameObject m_gravEffect, m_endGravEffect;
+    public GameObject m_gravEffect, m_endGravEffect, m_player;
 
     public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 60000.0f, m_endGravEffectForce = 10000.0f, m_gravDamage = 0.01f;
 
@@ -13,12 +13,19 @@ public class FiredGravityArrow : MonoBehaviour
     private PlayerStateInfo m_trappedPlayerState;
     private List<GoblinStateInfo> m_trappedGoblins = new List<GoblinStateInfo>();
 
+    private Vector3 m_firedFromPos;
+
     private bool m_flying = true;
 
     // Use this for initialization
     void Awake()
     {
         m_rigidBody = GetComponent<Rigidbody>();
+
+        if (m_player == null)
+        {
+            m_player = GameObject.FindGameObjectWithTag("Player");
+        }
     }
 
     // Update is called once per frame
@@ -42,6 +49,8 @@ public class FiredGravityArrow : MonoBehaviour
         m_rigidBody.isKinematic = false;
 
         transform.parent = null;
+
+        m_firedFromPos = m_player.transform.position;
     }
 
     private void OnCollisionEnter(Collision other)
@@ -109,6 +118,7 @@ public class FiredGravityArrow : MonoBehaviour
                     {
                         thisGoblin.m_gravLocked = true;
                         thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_gravDamage * Time.deltaTime, 0.0f, 1.0f);
+                        thisGoblin.m_playerLastSeenPos = m_firedFromPos;
                         m_trappedGoblins.Add(thisGoblin);
                     }
                 }                
