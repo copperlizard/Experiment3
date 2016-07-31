@@ -49,7 +49,8 @@ public class GameManager : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (!m_pauseLock && Input.GetButton("Pause"))
+        //Cannot recapture mouse with esc key because...
+        if (!m_paused && !m_pauseLock && Input.GetButton("Pause"))
         {
             m_pauseLock = true;
             m_paused = !m_paused;
@@ -61,6 +62,8 @@ public class GameManager : MonoBehaviour
 
         if (m_paused && !m_pauseMenu.activeInHierarchy)
         {
+            Debug.Log("Pausing Game!");
+
             m_pauseMenu.SetActive(true);
             Time.timeScale = 0.0f;
 
@@ -69,10 +72,12 @@ public class GameManager : MonoBehaviour
         }
         else if (!m_paused && m_pauseMenu.activeInHierarchy)
         {
+            Debug.Log("Resuming Game!");
+
             m_pauseMenu.SetActive(false);
             Time.timeScale = 1.0f;
 
-            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.lockState = CursorLockMode.Locked;            
             Cursor.visible = false;
         }
 

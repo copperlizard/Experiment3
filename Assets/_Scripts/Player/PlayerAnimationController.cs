@@ -41,8 +41,15 @@ public class PlayerAnimationController : MonoBehaviour
     private ParticleSystem.EmissionModule m_jumpEffectEmission;
     private ParticleSystem.MinMaxCurve m_jumpEffectEmissionRate;
 
-    private AudioSource m_footStepsSoundEffectSource;
-    private AudioSource m_jumpSoundEffectSource;
+    private ParticleSystem[] m_bowEffects;
+
+    private ParticleSystem.EmissionModule[] m_bowEffectEmmisions;
+    private ParticleSystem.MinMaxCurve m_bowEffectEmmisionRate;
+
+    private ParticleSystem.ForceOverLifetimeModule[] m_bowEffectForces;
+    private ParticleSystem.MinMaxCurve m_bowEffectForceCurve;
+
+    private AudioSource m_footStepsSoundEffectSource, m_jumpSoundEffectSource, m_bowSoundEffectSource;
 
     private Quaternion m_lastBowAimDeltaRot;
 
@@ -92,7 +99,28 @@ public class PlayerAnimationController : MonoBehaviour
 
         m_jumpSoundEffectSource = m_jumpEffect.GetComponentInParent<AudioSource>();
 
-        m_footStepsSoundEffectSource = GetComponent<AudioSource>();
+        
+        m_bowEffects = m_bow.GetComponentsInChildren<ParticleSystem>();
+
+        m_bowEffectEmmisions = new ParticleSystem.EmissionModule[m_bowEffects.Length];
+
+        for (int i = 0; i < m_bowEffects.Length; i++)
+        {
+            m_bowEffectEmmisions[i] = m_bowEffects[i].emission;
+        }
+
+        m_bowEffectForces = new ParticleSystem.ForceOverLifetimeModule[m_bowEffects.Length];
+
+        for (int i = 0; i < m_bowEffects.Length; i++)
+        {
+            m_bowEffectForces[i] = m_bowEffects[i].forceOverLifetime;
+        }
+
+        m_jumpEffectEmissionRate = m_jumpEffectEmission.rate;
+
+        m_bowSoundEffectSource = m_bow.GetComponent<AudioSource>();
+        
+        m_footStepsSoundEffectSource = GetComponent<AudioSource>();        
     }
 	
 	// Update is called once per frame
@@ -200,11 +228,13 @@ public class PlayerAnimationController : MonoBehaviour
             m_playerAnimator.SetFloat("JumpLeg", jumpLeg);
         }
         
+        //Foot sounds
         if ((runCycle <= 0.05f || (runCycle >= 0.475f && runCycle <= 0.525f)) && !m_footStepsSoundEffectSource.isPlaying && m_playerState.m_grounded)
         {
             m_footStepsSoundEffectSource.pitch = Random.Range(0.9f, 1.1f);
             m_footStepsSoundEffectSource.PlayOneShot(m_footStepsSoundEffectSource.clip, Mathf.Lerp(0.0f, 1.0f, m_playerRigidBody.velocity.magnitude));
         }
+        
 
         // the anim speed multiplier allows the overall speed of walking/running to be tweaked in the inspector,
         // which affects the movement speed because of the root motion.
@@ -260,8 +290,17 @@ public class PlayerAnimationController : MonoBehaviour
 
             m_playerState.m_arrowCharge = (stateInfo.normalizedTime > 1.0f) ? 1.0f : stateInfo.normalizedTime;
 
-            //Debug.Log("arrow charge == " + m_playerState.m_arrowCharge.ToString());
-
+            //Add bow effects            
+            m_bowSoundEffectSource.pitch = 0.5f + 0.15f * m_playerState.m_arrowCharge;
+            m_bowEffectEmmisionRate.constantMax = 20.0f + (80.0f * m_playerState.m_arrowCharge);
+            m_bowEffectForceCurve.constantMax = 2.0f + 3.0f * m_playerState.m_arrowCharge;
+            
+            for (int i = 0; i < m_bowEffectEmmisions.Length; i++)
+            {
+                m_bowEffectEmmisions[i].rate = m_bowEffectEmmisionRate;
+                m_bowEffectForces[i].y = m_bowEffectForceCurve;                  
+            }
+            
             if (!m_playerState.m_firing)
             {
                 break;
@@ -270,14 +309,28 @@ public class PlayerAnimationController : MonoBehaviour
             yield return null;
         }        
 
-        while (m_playerState.m_firing)
+        while (m_playerState.m_firing && m_playerState.m_aiming)
         {
             //Debug.Log("full charge");
 
             yield return null;
         }
+        
+        //Reset bow effects
+        m_bowSoundEffectSource.pitch = 0.5f;
+        m_bowEffectEmmisionRate.constantMax = 20.0f;
+        m_bowEffectForceCurve.constantMax = 2.0f;
 
-        m_playerAnimator.Play("ArmedFire", 1);
+        for (int i = 0; i < m_bowEffectEmmisions.Length; i++)
+        {
+            m_bowEffectEmmisions[i].rate = m_bowEffectEmmisionRate;
+            m_bowEffectForces[i].y = m_bowEffectForceCurve;
+        }
+        
+        if (m_playerState.m_aiming)
+        {
+            m_playerAnimator.Play("ArmedFire", 1);
+        }               
         
         m_fireLock = false;
     }
@@ -662,6 +715,8 @@ public class PlayerAnimationController : MonoBehaviour
 
     void ArrowCanceled ()
     {
+        Debug.Log("arrow canceled!");
+
         if (m_drawnArrow.activeInHierarchy)
         {
             m_drawnArrow.SetActive(false);
@@ -670,6 +725,6 @@ public class PlayerAnimationController : MonoBehaviour
         if (m_drawingArrow.activeInHierarchy)
         {
             m_drawingArrow.SetActive(false);
-        }        
+        }       
     }
 }
