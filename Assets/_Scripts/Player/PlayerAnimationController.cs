@@ -587,11 +587,11 @@ public class PlayerAnimationController : MonoBehaviour
             m_playerAnimator.SetBoneLocalRotation(HumanBodyBones.Spine, m_spineTransform.localRotation);
         }
         //Magic aim
-        else if (m_playerState.m_aiming)
+        else if (m_playerState.m_aiming) //maybe not when sprinting???
         {
             m_playerAnimator.SetLookAtPosition(m_orbitCam.m_hit.point);
             m_playerAnimator.SetLookAtWeight(1.0f);
-
+            
             Vector3 m_aimPos = m_rightShoulderTransform.position + ((m_rightShoulderTransform.position - m_leftShoulderTransform.position) * 0.5f);
 
             Vector3 tar = m_orbitCam.m_hit.point;

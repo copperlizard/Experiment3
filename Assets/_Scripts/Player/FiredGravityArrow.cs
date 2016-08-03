@@ -6,6 +6,8 @@ public class FiredGravityArrow : MonoBehaviour
 {
     public GameObject m_gravEffect, m_endGravEffect, m_player;
 
+    public HUD m_HUD;
+
     public float m_gravEffectTime = 5.0f, m_endGravEffectTime = 1.0f, m_gravEffectRadius = 5.0f, m_gravEffectForce = 60000.0f, m_endGravEffectForce = 10000.0f, m_gravDamage = 0.01f;
 
     private Rigidbody m_rigidBody;
@@ -25,6 +27,11 @@ public class FiredGravityArrow : MonoBehaviour
         if (m_player == null)
         {
             m_player = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if (m_HUD == null)
+        {
+            m_HUD = GameObject.FindGameObjectWithTag("HUD").GetComponent<HUD>();
         }
     }
 
@@ -111,6 +118,8 @@ public class FiredGravityArrow : MonoBehaviour
                 else if (hits[i].tag == "Goblin")
                 {
                     //Debug.Log("hit goblin " + hits[i].name);
+
+                    m_HUD.IndicateHit();
 
                     GoblinStateInfo thisGoblin = hits[i].GetComponentInParent<GoblinStateInfo>();
 

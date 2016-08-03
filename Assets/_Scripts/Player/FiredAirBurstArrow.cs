@@ -5,6 +5,8 @@ public class FiredAirBurstArrow : MonoBehaviour
 {
     public GameObject m_airBurstEffect, m_player;
 
+    public HUD m_HUD;
+
     public float m_airBurstRange = 5.0f, m_airBurstTime = 3.0f, m_coneFactor = 0.5f, m_airBurstForce = 30000, m_airBurstDamage = 0.2f;
 
     private Rigidbody m_rigidBody;
@@ -23,6 +25,11 @@ public class FiredAirBurstArrow : MonoBehaviour
         if (m_player == null)
         {
             m_player = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if (m_HUD == null)
+        {
+            m_HUD = GameObject.FindGameObjectWithTag("HUD").GetComponent<HUD>();
         }
     }
 
@@ -104,6 +111,8 @@ public class FiredAirBurstArrow : MonoBehaviour
 
                     if (hits[i].transform.tag == "Goblin" && LayerMask.LayerToName(hits[i].transform.gameObject.layer) == "PlayerBubble")
                     {
+                        m_HUD.IndicateHit();
+
                         GoblinStateInfo thisGoblin = hits[i].transform.GetComponent<GoblinStateInfo>();
 
                         thisGoblin.m_health = Mathf.Clamp(thisGoblin.m_health - m_airBurstDamage * Time.deltaTime, 0.0f, 1.0f);
