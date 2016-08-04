@@ -272,7 +272,7 @@ public class GoblinAI : MonoBehaviour
                     if (distToPathPoint < 0.5f)
                     {
                         //Proceed to next corner
-                        m_curPathPoint++;
+                        m_curPathPoint += 1;
 
                         if (m_curPathPoint >= m_goblinPath.corners.Length)
                         {

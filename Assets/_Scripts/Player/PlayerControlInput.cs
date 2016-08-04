@@ -44,6 +44,12 @@ public class PlayerControlInput : MonoBehaviour
         m_playerState.m_jumping = Input.GetButton("Jump");
         m_playerState.m_sprinting = Input.GetButton("Sprint");
 
+        //No firing while sprinting
+        if (m_playerState.m_sprinting)
+        {
+            m_playerState.m_firing = false;
+        }
+
         if (!m_weaponModeLock && Input.GetButton("WeaponMode"))
         {
             m_weaponModeLock = true;

@@ -152,8 +152,7 @@ public class PlayerMovementController : MonoBehaviour
                 m_playerState.m_jumping = false;
 
                 //Hit head
-
-                Debug.Log("hit head on " + m_groundHit.transform.name);
+                //Debug.Log("hit head on " + m_groundHit.transform.name);
 
                 return true;
             }

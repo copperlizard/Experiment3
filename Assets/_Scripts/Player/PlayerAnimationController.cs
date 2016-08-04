@@ -205,7 +205,7 @@ public class PlayerAnimationController : MonoBehaviour
         }
 
         // update the animator parameters
-        m_playerAnimator.SetLayerWeight(1, (m_playerState.m_aiming) ? Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 1.0f, 0.1f) : Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //set aiming layer weight
+        m_playerAnimator.SetLayerWeight(1, (m_playerState.m_aiming && !m_playerState.m_sprinting) ? Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 1.0f, 0.1f) : Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //set aiming layer weight
         m_playerAnimator.SetFloat("Forward", m_playerState.m_forwardAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Sideways", m_playerState.m_sidewaysAmount, 0.1f, Time.deltaTime);
         m_playerAnimator.SetFloat("Turn", m_turn, 0.1f, Time.deltaTime);
@@ -715,7 +715,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     void ArrowCanceled ()
     {
-        Debug.Log("arrow canceled!");
+        //Debug.Log("arrow canceled!");
 
         if (m_drawnArrow.activeInHierarchy)
         {
