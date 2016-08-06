@@ -76,6 +76,8 @@
     <Compile Include="Assets\_Scripts\HUD\PlayerStatusPanel.cs" />
     <Compile Include="Assets\_Scripts\HUD\SpellsPanel.cs" />
     <Compile Include="Assets\_Scripts\Healer.cs" />
+    <Compile Include="Assets\_Scripts\OceanFollow.cs" />
+    <Compile Include="Assets\_Scripts\Player\DrawingArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnMagic.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredAirBurstArrow.cs" />
