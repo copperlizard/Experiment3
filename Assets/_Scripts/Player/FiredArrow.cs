@@ -4,7 +4,7 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class FiredArrow : MonoBehaviour
 {
-    public GameObject m_player;
+    public GameObject m_player, m_arrowEffect, m_dotEffect;
 
     public HUD m_HUD;
 
@@ -54,6 +54,8 @@ public class FiredArrow : MonoBehaviour
 
     private void OnEnable ()
     {
+        m_dotEffect.SetActive(false);
+
         m_flying = true;
 
         m_rigidBody.useGravity = true;
@@ -63,6 +65,8 @@ public class FiredArrow : MonoBehaviour
         transform.parent = null;
 
         m_hitGoblinState = null;
+
+        m_arrowEffect.SetActive(true);
     }
 
     
@@ -82,6 +86,10 @@ public class FiredArrow : MonoBehaviour
             if (other.transform.tag == "Goblin")
             {
                 m_HUD.IndicateHit();
+
+                m_arrowEffect.SetActive(false);
+                transform.position = other.transform.position;
+                m_dotEffect.SetActive(true);
 
                 m_hitGoblinState = other.transform.GetComponentInParent<GoblinStateInfo>();
 

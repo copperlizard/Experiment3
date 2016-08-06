@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
+    <Compile Include="Assets\_Scripts\BasicRotator.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAI.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAnimationController.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinHealthDisplay.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Assets\_Scripts\HUD\SpellsPanel.cs" />
     <Compile Include="Assets\_Scripts\Healer.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnArrow.cs" />
+    <Compile Include="Assets\_Scripts\Player\DrawnMagic.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredAirBurstArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\FiredGravityArrow.cs" />
@@ -92,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
+    <None Include="Assets\_Shaders\FarOceanShader.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

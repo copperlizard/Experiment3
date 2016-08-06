@@ -233,8 +233,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             m_footStepsSoundEffectSource.pitch = Random.Range(0.9f, 1.1f);
             m_footStepsSoundEffectSource.PlayOneShot(m_footStepsSoundEffectSource.clip, Mathf.Lerp(0.0f, 1.0f, m_playerRigidBody.velocity.magnitude));
-        }
-        
+        }        
 
         // the anim speed multiplier allows the overall speed of walking/running to be tweaked in the inspector,
         // which affects the movement speed because of the root motion.
@@ -708,7 +707,7 @@ public class PlayerAnimationController : MonoBehaviour
         arrow.SetActive(true);
                 
         //arrowRB.velocity = arrow.transform.forward * (30.0f + 30.0f * m_playerState.m_arrowCharge);
-        arrowRB.velocity = (m_orbitCam.m_hit.point - arrow.transform.position).normalized * (30.0f + 30.0f * m_playerState.m_arrowCharge);
+        arrowRB.velocity = (m_orbitCam.m_hit.point - arrow.transform.position).normalized * (30.0f + 60.0f * m_playerState.m_arrowCharge);
 
         m_playerState.m_arrowCharge = 0.0f;
     }

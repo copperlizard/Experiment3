@@ -30,6 +30,6 @@ public class FarOceanIllusion : MonoBehaviour
     {
         transform.position = m_player.transform.position + m_offset;
 
-        transform.localRotation = Quaternion.Euler(0.0f, m_cam.transform.localRotation.eulerAngles.y, 0.0f);
+        //transform.localRotation = Quaternion.Euler(0.0f, m_cam.transform.localRotation.eulerAngles.y, 0.0f);
 	}
 }
