@@ -26,8 +26,8 @@ public class DrawnArrow : MonoBehaviour
         }
 
         m_playerState = m_player.GetComponent<PlayerStateInfo>();
-
-        m_arrows = GetComponentsInChildren<ParticleSystem>();
+        
+        m_arrows = transform.GetChild(0).gameObject.GetComponentsInChildren<ParticleSystem>();
 
         m_arrowEmitters = new ParticleSystem.EmissionModule[m_arrows.Length];
 
@@ -39,7 +39,7 @@ public class DrawnArrow : MonoBehaviour
         m_arrowEmisionRates = new ParticleSystem.MinMaxCurve[m_arrows.Length];
 
         for (int i = 0; i < m_arrows.Length; i++)
-        {
+        {            
             m_arrowEmisionRates[i] = m_arrowEmitters[i].rate;
         }
 	}

@@ -50,8 +50,14 @@ public class PlayerControlInput : MonoBehaviour
             m_playerState.m_firing = false;
         }
 
-        //No sprint crouching with bow
-        if (m_playerState.m_armed && m_playerState.m_crouching)
+        //No sprinting while aiming bow
+        if (m_playerState.m_armed && m_playerState.m_aiming)
+        {
+            m_playerState.m_sprinting = false;
+        }
+
+        //No crouch sprinting
+        if (m_playerState.m_crouching)
         {
             m_playerState.m_sprinting = false;
         }

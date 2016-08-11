@@ -64,19 +64,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
-    <Compile Include="Assets\_Scripts\BasicRotator.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAI.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAnimationController.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinHealthDisplay.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinMovementController.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinStateInfo.cs" />
-    <Compile Include="Assets\_Scripts\FarOceanIllusion.cs" />
     <Compile Include="Assets\_Scripts\HUD\ArrowsPanel.cs" />
     <Compile Include="Assets\_Scripts\HUD\HUD.cs" />
     <Compile Include="Assets\_Scripts\HUD\PlayerStatusPanel.cs" />
     <Compile Include="Assets\_Scripts\HUD\SpellsPanel.cs" />
     <Compile Include="Assets\_Scripts\Healer.cs" />
-    <Compile Include="Assets\_Scripts\OceanFollow.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawingArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnArrow.cs" />
     <Compile Include="Assets\_Scripts\Player\DrawnMagic.cs" />
@@ -90,8 +87,12 @@
     <Compile Include="Assets\_Scripts\Player\PlayerControlInput.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerMovementController.cs" />
     <Compile Include="Assets\_Scripts\Player\PlayerStateInfo.cs" />
+    <Compile Include="Assets\_Scripts\Utility\BasicRotator.cs" />
+    <Compile Include="Assets\_Scripts\Utility\CameraOffsetSlider.cs" />
+    <Compile Include="Assets\_Scripts\Utility\CameraOffsetText.cs" />
     <Compile Include="Assets\_Scripts\Utility\GameManager.cs" />
     <Compile Include="Assets\_Scripts\Utility\ObjectPool.cs" />
+    <Compile Include="Assets\_Scripts\Utility\OceanFollow.cs" />
     <Compile Include="Assets\_Scripts\Utility\TerrainManager.cs" />
   </ItemGroup>
   <ItemGroup>
