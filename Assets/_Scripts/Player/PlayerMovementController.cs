@@ -126,7 +126,7 @@ public class PlayerMovementController : MonoBehaviour
 #endif
         */
        
-        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out m_groundHit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble")))
+        if (Physics.Raycast(transform.position + (Vector3.up * m_groundCheckDist * 0.5f), Vector3.down, out m_groundHit, m_groundCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble"), QueryTriggerInteraction.Ignore))
         {
             m_groundNormal = m_groundHit.normal;
             return true;
@@ -146,7 +146,7 @@ public class PlayerMovementController : MonoBehaviour
             Debug.DrawLine(startPos, startPos + Vector3.up * m_headCheckDist, Color.green);
 #endif            
             
-            if (Physics.Raycast(startPos, Vector3.up, out m_groundHit, m_headCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast", "Enemy")))
+            if (Physics.Raycast(startPos, Vector3.up, out m_groundHit, m_headCheckDist, ~LayerMask.GetMask("Player", "PlayerBubble", "Ignore Raycast", "Enemy"), QueryTriggerInteraction.Ignore))
             {                
                 m_playerState.m_sprinting = false;
                 m_playerState.m_jumping = false;

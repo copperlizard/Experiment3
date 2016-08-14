@@ -10,5 +10,5 @@ public class PlayerStateInfo : MonoBehaviour
     public int m_arrowMode = 0, m_magicMode = 0;
 
     [HideInInspector]
-    public bool m_grounded, m_armed, m_aiming, m_firing, m_jumping, m_crouching, m_sprinting, m_gravLocked = false;
+    public bool m_grounded, m_armed, m_aiming, m_firing, m_jumping, m_crouching, m_sprinting, m_gravLocked = false, m_surfing = false;
 }

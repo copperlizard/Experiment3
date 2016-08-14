@@ -226,4 +226,9 @@ public class GameManager : MonoBehaviour
         animator.SetBoneLocalRotation(HumanBodyBones.RightUpperLeg, pose.m_rightUpperLeg.localRotation);
         animator.SetBoneLocalRotation(HumanBodyBones.Spine, pose.m_spine.localRotation);
     }
+
+    void OnDestroy ()
+    {
+        m_goblinBodies.CleanPool();
+    }
 }

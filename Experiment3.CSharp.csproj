@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Hoverboard.cs" />
     <Compile Include="Assets\Resources\Standard Assets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAI.cs" />
     <Compile Include="Assets\_Scripts\Enemies\Goblin\GoblinAnimationController.cs" />
@@ -90,9 +91,11 @@
     <Compile Include="Assets\_Scripts\Utility\BasicRotator.cs" />
     <Compile Include="Assets\_Scripts\Utility\CameraOffsetSlider.cs" />
     <Compile Include="Assets\_Scripts\Utility\CameraOffsetText.cs" />
+    <Compile Include="Assets\_Scripts\Utility\DataManager.cs" />
     <Compile Include="Assets\_Scripts\Utility\GameManager.cs" />
     <Compile Include="Assets\_Scripts\Utility\ObjectPool.cs" />
     <Compile Include="Assets\_Scripts\Utility\OceanFollow.cs" />
+    <Compile Include="Assets\_Scripts\Utility\Teleporter.cs" />
     <Compile Include="Assets\_Scripts\Utility\TerrainManager.cs" />
   </ItemGroup>
   <ItemGroup>

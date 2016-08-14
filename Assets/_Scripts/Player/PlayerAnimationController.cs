@@ -215,6 +215,20 @@ public class PlayerAnimationController : MonoBehaviour
         m_playerAnimator.SetBool("Aiming", m_playerState.m_aiming);
         m_playerAnimator.SetBool("Crouch", m_playerState.m_crouching);
         m_playerAnimator.SetBool("Armed", m_playerState.m_armed);
+        m_playerAnimator.SetBool("Surfing", m_playerState.m_surfing);
+
+        if (m_playerState.m_surfing)
+        {
+            m_playerAnimator.SetLayerWeight(0, Mathf.Lerp(m_playerAnimator.GetLayerWeight(0), 0.0f, 0.1f)); //override locomotion layer
+            m_playerAnimator.SetLayerWeight(1, Mathf.Lerp(m_playerAnimator.GetLayerWeight(1), 0.0f, 0.1f)); //override aiming layer
+            m_playerAnimator.SetLayerWeight(2, Mathf.Lerp(m_playerAnimator.GetLayerWeight(2), 1.0f, 0.1f));
+        }
+        else
+        {
+            m_playerAnimator.SetLayerWeight(0, Mathf.Lerp(m_playerAnimator.GetLayerWeight(0), 1.0f, 0.1f)); //restore locomotion layer
+            
+            m_playerAnimator.SetLayerWeight(2, Mathf.Lerp(m_playerAnimator.GetLayerWeight(2), 0.0f, 0.1f));
+        }
 
         // calculate which leg is behind, so as to leave that leg trailing in the jump animation
         // (This code is reliant on the specific run cycle offset in our animations,

@@ -42,25 +42,7 @@ public class PlayerControlInput : MonoBehaviour
 
         m_playerState.m_crouching = Input.GetButton("Crouch");
         m_playerState.m_jumping = Input.GetButton("Jump");
-        m_playerState.m_sprinting = Input.GetButton("Sprint");
-
-        //No magic while sprinting
-        if (m_playerState.m_sprinting && !m_playerState.m_armed)
-        {
-            m_playerState.m_firing = false;
-        }
-
-        //No sprinting while aiming bow
-        if (m_playerState.m_armed && m_playerState.m_aiming)
-        {
-            m_playerState.m_sprinting = false;
-        }
-
-        //No crouch sprinting
-        if (m_playerState.m_crouching)
-        {
-            m_playerState.m_sprinting = false;
-        }
+        m_playerState.m_sprinting = Input.GetButton("Sprint");        
 
         if (!m_weaponModeLock && Input.GetButton("WeaponMode"))
         {
@@ -101,6 +83,36 @@ public class PlayerControlInput : MonoBehaviour
             {
                 m_playerState.m_magicMode = 2;
             }
+        }
+
+        //No magic while sprinting
+        if (m_playerState.m_sprinting && !m_playerState.m_armed)
+        {
+            m_playerState.m_firing = false;
+        }
+
+        //No sprinting while aiming bow
+        if (m_playerState.m_armed && m_playerState.m_aiming)
+        {
+            m_playerState.m_sprinting = false;
+        }
+
+        //No crouch sprinting
+        if (m_playerState.m_crouching)
+        {
+            m_playerState.m_sprinting = false;
+        }
+
+        //No nothing while surfing
+        if (m_playerState.m_surfing)
+        {
+            m_playerState.m_firing = false;
+            m_playerState.m_aiming = false;
+            m_playerState.m_armed = false;
+            m_playerState.m_crouching = false;
+            m_playerState.m_sprinting = false;
+            m_playerState.m_jumping = false;
+            m_playerState.m_grounded = true; //no falling            
         }
 
         m_playerMover.Move(m_v, m_h);
