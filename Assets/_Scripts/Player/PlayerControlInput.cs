@@ -103,8 +103,8 @@ public class PlayerControlInput : MonoBehaviour
             m_playerState.m_sprinting = false;
         }
 
-        //No nothing while surfing
-        if (m_playerState.m_surfing)
+        //No nothing while surfing or interacting
+        if (m_playerState.m_surfing || m_playerState.m_interacting)
         {
             m_playerState.m_firing = false;
             m_playerState.m_aiming = false;
@@ -114,7 +114,9 @@ public class PlayerControlInput : MonoBehaviour
             m_playerState.m_jumping = false;
             m_playerState.m_grounded = true; //no falling            
         }
-
-        m_playerMover.Move(m_v, m_h);
+        else
+        {
+            m_playerMover.Move(m_v, m_h);
+        }        
 	}
 }

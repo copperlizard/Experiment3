@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/_Scenes/01_Island.unity
+- path: Assets/_Scenes/01_AstralPlane.unity
   isLoaded: 1
   isActive: 1

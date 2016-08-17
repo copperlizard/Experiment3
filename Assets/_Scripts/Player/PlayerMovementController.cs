@@ -118,6 +118,21 @@ public class PlayerMovementController : MonoBehaviour
         }
     }
 
+    public void MoveToInteract(float v, float h, float y)
+    {
+        Vector3 move = new Vector3(h, 0.0f, v).normalized;
+
+        // Rotate player to match input        
+        m_playerState.m_turnTarAng = y;
+
+        // Account for "hills"
+        move = Vector3.ProjectOnPlane(move, m_groundNormal);
+
+        Vector3 localMove = transform.InverseTransformVector(move);
+        m_playerState.m_forwardAmount = localMove.z;
+        m_playerState.m_sidewaysAmount = localMove.x;
+    }
+
     private bool CheckGround ()
     {
         /*   

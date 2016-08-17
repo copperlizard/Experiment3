@@ -59,6 +59,7 @@ public class DataManager : MonoBehaviour
         toSave.m_sidewaysAmount = m_savedPlayerState.m_sidewaysAmount;
         toSave.m_sprinting = m_savedPlayerState.m_sprinting;
         toSave.m_surfing = false;
+        toSave.m_interacting = false;
         toSave.m_turnTarAng = m_savedPlayerState.m_turnTarAng;
     }
 
@@ -87,6 +88,7 @@ public class DataManager : MonoBehaviour
         m_savedPlayerState.m_sidewaysAmount = toLoad.m_sidewaysAmount;
         m_savedPlayerState.m_sprinting = toLoad.m_sprinting;
         m_savedPlayerState.m_surfing = toLoad.m_surfing;
+        m_savedPlayerState.m_interacting = toLoad.m_interacting;
         m_savedPlayerState.m_turnTarAng = toLoad.m_turnTarAng;        
 
         if (toLoad != null)

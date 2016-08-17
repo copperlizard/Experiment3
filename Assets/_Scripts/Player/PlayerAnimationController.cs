@@ -188,7 +188,10 @@ public class PlayerAnimationController : MonoBehaviour
         }
         m_turn /= 180.0f;
 
-        RotatePlayer(m_turn);
+        if (!m_playerState.m_surfing)
+        {
+            RotatePlayer(m_turn);
+        }        
 
         PlayerJump();
 
