@@ -116,6 +116,7 @@ public class PlayerControlInput : MonoBehaviour
         }
         else
         {
+            Debug.Log("under player control!");
             m_playerMover.Move(m_v, m_h);
         }        
 	}
