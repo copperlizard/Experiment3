@@ -117,6 +117,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void LoadScene (int ind)
+    {
+        SceneManager.LoadScene(ind);
+        PauseButton();
+    }
+
     private void DropBody (GameObject goblin)
     {
         Debug.Log("dropping body for " + goblin.name);

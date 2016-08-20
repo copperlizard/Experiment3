@@ -521,6 +521,12 @@ public class PlayerAnimationController : MonoBehaviour
 
     private void OnAnimatorMove ()
     {
+        //Maybe not neccessary
+        if (m_playerState.m_surfing)
+        {
+            return;
+        }
+
         if (m_playerState.m_grounded && Time.deltaTime > 0)
         {
             Vector3 v = (m_playerAnimator.deltaPosition * m_MoveSpeedMultiplier) / Time.deltaTime;

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Hoverboard : MonoBehaviour
 {
-    public GameObject m_player, m_cam;
+    public GameObject m_player, m_cam, m_hoverEffects;
     public GameManager m_gameManager;
 
     public float m_hoverForce, m_hoverDistance, m_stationaryTurnSpeed = 180.0f, m_movingTurnSpeed = 360.0f, m_boardJumpForce = 50.0f, m_boardJumpChargeRate = 0.1f;
@@ -11,6 +11,8 @@ public class Hoverboard : MonoBehaviour
     private Rigidbody m_boardRB, m_playerRB;
     private PlayerStateInfo m_playerState;
     private PlayerMovementController m_playerMover;
+
+    private AudioSource m_hoverSoundSource;
 
     private MeshFilter  m_boardMeshFilter;
     private Mesh m_boardMesh;
@@ -47,7 +49,9 @@ public class Hoverboard : MonoBehaviour
         m_playerMover = m_player.GetComponent<PlayerMovementController>();
 
         m_boardMeshFilter = GetComponentInChildren<MeshFilter>();
-        m_boardMesh = m_boardMeshFilter.mesh;        
+        m_boardMesh = m_boardMeshFilter.mesh;
+
+        m_hoverSoundSource = m_hoverEffects.GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
@@ -64,6 +68,16 @@ public class Hoverboard : MonoBehaviour
             m_h = Input.GetAxis("Horizontal");
 
             m_boardJumping = Input.GetButton("Jump");
+
+            //Stick player to board
+            //m_player.transform.position = transform.position + new Vector3(0.0f, 0.11f, 0.0f);
+            //m_player.transform.position = transform.position + new Vector3(0.0f, m_boardRenderer.bounds.size.y, 0.0f);
+            //m_player.transform.rotation = transform.rotation;
+
+            m_player.transform.localPosition = new Vector3(0.0f, 0.07f, 0.0f);
+            m_player.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+
+            //Debug.Log("m_player.transform.localPosition.y == " + m_player.transform.localPosition.y.ToString());
         }
 
         //Get on/off board
@@ -102,6 +116,9 @@ public class Hoverboard : MonoBehaviour
         //Control board
         if (m_playerSurfing)
         {
+            //Hover sound
+            m_hoverSoundSource.pitch = Mathf.Lerp(m_hoverSoundSource.pitch, 0.5f + 0.6f * Mathf.SmoothStep(0.0f, 1.0f, m_boardRB.velocity.magnitude / 20.0f) + Random.Range(0.0f, 0.5f), 0.1f);
+
             //Board Hover
             Vector3 center = transform.position + m_boardMesh.bounds.center + new Vector3(0.0f, 0.5f, 0.0f);
             Vector3 front = transform.position + m_boardMesh.bounds.center + transform.rotation * new Vector3(0.0f, 0.5f, m_boardMesh.bounds.extents.z * m_boardMeshFilter.transform.localScale.z);
@@ -144,8 +161,11 @@ public class Hoverboard : MonoBehaviour
 
             if (noGround)
             {
-                Debug.Log("no ground!");
+                //Debug.Log("no ground!");
                 m_boardGrounded = false;
+
+                //Self stabilize in air
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0.0f), 0.1f);
             }
             else
             {
@@ -195,12 +215,17 @@ public class Hoverboard : MonoBehaviour
             }
 
             //Stick player to board
-            m_player.transform.position = transform.position + new Vector3(0.0f, 0.11f, 0.0f);
+            //m_player.transform.position = transform.position + new Vector3(0.0f, 0.11f, 0.0f);
             //m_player.transform.position = transform.position + new Vector3(0.0f, m_boardRenderer.bounds.size.y, 0.0f);
-            m_player.transform.rotation = transform.rotation;
+            //m_player.transform.rotation = transform.rotation;
+
+            //m_player.transform.localPosition = new Vector3(0.0f, 0.07f, 0.0f);
+            //m_player.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+
+            //Debug.Log("m_player.transform.localPosition.y == " + m_player.transform.localPosition.y.ToString());
 
             //Player fall off
-            if (Vector3.Dot(transform.up, Vector3.up) <= 0.0f && !m_playerFalling)
+            if (Vector3.Dot(transform.up, Vector3.up) <= -0.1f && !m_playerFalling)
             {
                 StartCoroutine(PlayerFallOff());
             }
@@ -258,7 +283,7 @@ public class Hoverboard : MonoBehaviour
             //m_jumpEffectEmissionRate.constantMax = 50.0f * m_jumpCharge;
             //m_jumpEffectEmission.rate = m_jumpEffectEmissionRate;
 
-            Debug.Log("m_jumpCharge == " + m_boardJumpCharge.ToString());
+            //Debug.Log("m_jumpCharge == " + m_boardJumpCharge.ToString());
 
             yield return null;
         }
@@ -266,7 +291,10 @@ public class Hoverboard : MonoBehaviour
         if (m_boardGrounded)
         {
             m_boardGrounded = false;
-            m_boardRB.AddForce(Vector3.up * (m_boardJumpForce * Mathf.Clamp(m_boardJumpChargeRate, 0.2f, 1.0f)), ForceMode.VelocityChange);
+            m_boardRB.AddForce(Vector3.up * (m_boardJumpForce * Mathf.Clamp(m_boardJumpChargeRate, 0.2f, 1.0f)), ForceMode.Impulse);
+            //m_boardRB.velocity = m_boardRB.velocity + Vector3.up * (m_boardJumpForce * Mathf.Clamp(m_boardJumpChargeRate, 0.2f, 1.0f));
+            //m_playerRB.AddForce(Vector3.up * (m_boardJumpForce * Mathf.Clamp(m_boardJumpChargeRate, 0.2f, 1.0f)), ForceMode.Impulse);
+            //m_playerRB.velocity = m_playerRB.velocity + Vector3.up * (m_boardJumpForce * Mathf.Clamp(m_boardJumpChargeRate, 0.2f, 1.0f));
         }
 
         m_boardJumpCharge = 0.0f;
@@ -296,12 +324,16 @@ public class Hoverboard : MonoBehaviour
             //Positioned
             if (toPos.magnitude < 0.05f)
             {
+                m_hoverEffects.SetActive(true);
+
                 m_playerState.m_surfing = true;
                 m_playerSurfing = true;
                 m_player.transform.parent = transform;
-                m_playerRB.isKinematic = true;
+                //m_playerRB.isKinematic = true;
                 m_playerRB.useGravity = false;
-                m_playerRB.constraints = RigidbodyConstraints.None;      
+                m_playerRB.constraints = RigidbodyConstraints.None;
+
+                m_playerRB.detectCollisions = false;  
             }
             
             yield return null;
@@ -320,12 +352,16 @@ public class Hoverboard : MonoBehaviour
             yield return null;
         }
 
+        m_hoverEffects.SetActive(false);
+
         m_playerSurfing = false;
         m_playerState.m_surfing = false;
         m_player.transform.parent = null;
-        m_playerRB.isKinematic = false;
+        //m_playerRB.isKinematic = false;
         m_playerRB.useGravity = true;
         m_playerRB.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+        m_playerRB.detectCollisions = true;
 
         m_playerDismounting = false;
 
@@ -338,13 +374,17 @@ public class Hoverboard : MonoBehaviour
     {
         m_playerFalling = true;
 
+        m_hoverEffects.SetActive(false);
+
         m_playerSurfing = false;
         m_playerState.m_interacting = false;
         m_playerState.m_surfing = false;
         m_player.transform.parent = null;
-        m_playerRB.isKinematic = false;
+        //m_playerRB.isKinematic = false;
         m_playerRB.useGravity = true;
-        
+
+        m_playerRB.detectCollisions = true;
+
 
         while (Vector3.Dot(m_player.transform.up, Vector3.up) <= 0.90f)
         {
@@ -375,7 +415,7 @@ public class Hoverboard : MonoBehaviour
 
     void OnTriggerExit (Collider other)
     {
-        if (other.tag == "Player")
+        if (other.tag == "Player" && !m_playerSurfing)
         {
             m_playerOnBoard = false;
         }

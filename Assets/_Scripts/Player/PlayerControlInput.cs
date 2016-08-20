@@ -115,8 +115,7 @@ public class PlayerControlInput : MonoBehaviour
             m_playerState.m_grounded = true; //no falling            
         }
         else
-        {
-            Debug.Log("under player control!");
+        {            
             m_playerMover.Move(m_v, m_h);
         }        
 	}
